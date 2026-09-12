@@ -1,0 +1,479 @@
+{
+  "classification": "historical proof receipt for this candidate",
+  "owner": "Bay maintainers",
+  "source": "docs/proof/bay-readable-layout/run-proof.mjs",
+  "recordedAt": "2026-09-12T22:01:29.069Z",
+  "candidate": "4d43f8f5a62215e41ba180930e2ee72f21bf5ace+patch-sha256:707e1cec4185fa630f6f2fd8ff5dad9e2861c26e3141e44e6c2bf4b300b70e41",
+  "base": "4d43f8f5a62215e41ba180930e2ee72f21bf5ace",
+  "provider": "aws",
+  "image": "ami-0461d919be7deb53c",
+  "lease": "cbx_eb790c210fa7",
+  "node": "v24.18.1",
+  "browser": "151.0.7922.71",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "real ExactReviewQueue DO admission, lifecycle finalization, batch-inclusive and direct timing projection",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-360 patrol resumes after reduced motion is disabled",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-360 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "mixed-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "long-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "empty-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "stale-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "unknown-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "terminal-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "batch-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "missing-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-activity-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "forward-360 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-2400 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-2400 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-2400 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-2400 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1920 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1920 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-1920 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-1920 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "finder interruption of an in-flight forward sweep parks and fences the visual state",
+      "result": "PASS"
+    },
+    {
+      "name": "desktop refresh removing a focused terminal card restores visible finder focus",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1440 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "mixed-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "long-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "empty-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "stale-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "unknown-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "terminal-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "batch-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "missing-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-activity-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "forward-1440 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1200 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1200 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-1200 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-1200 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1199 patrol resumes after reduced motion is disabled",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1199 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "mixed-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "long-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "empty-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "stale-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "unknown-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "terminal-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "batch-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "missing-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-activity-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "forward-1199 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-768 patrol resumes after reduced motion is disabled",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-768 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "mixed-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "long-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "empty-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "stale-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "unknown-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "terminal-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "batch-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "missing-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-activity-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "forward-768 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-430 patrol resumes after reduced motion is disabled",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-430 system motion preference changes synchronize control and retain manual choice",
+      "result": "PASS"
+    },
+    {
+      "name": "normal-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "crowded-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "busy-neighbors-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "mixed-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "long-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "empty-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "stale-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "unknown-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "terminal-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "batch-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "missing-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "partial-activity-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "forward-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "all browser traffic stays same-origin GET; no queue/workflow/GitHub mutation attempts",
+      "result": "PASS"
+    }
+  ],
+  "limits": "Controlled fixture snapshots persist through real StatusStore DO and production cached /api/status projection. Separate real ExactReviewQueue admission/finalization exercised. No live producers or upstream workflow behavior proved. Human screenshot inspection remains required.",
+  "conversion": "PNG to WebP quality 0.9; dimensions unchanged; original PNG SHA-256 retained",
+  "images": [
+    {
+      "file": "normal-2400-before.webp",
+      "width": 2400,
+      "height": 1371,
+      "pngSha256": "f5c747ce9ad1e88a46a50d901e29285ea4aa4b9c13582e7986d06dc6c53e0278",
+      "webpSha256": "cb0f031a5f07d01dee26c701fdbd88042ed5b187a25f3b49e2727a446e0ecb3e",
+      "bytes": 325688
+    },
+    {
+      "file": "normal-2400-after.webp",
+      "width": 2400,
+      "height": 1371,
+      "pngSha256": "1873732ce4540d6966ab511b3aa8bb749ad829b2dd1b23ba686514565214ec18",
+      "webpSha256": "5a61998a5b0d46335e0b8428f5039620f6f37f83f81ce56af97af60b0e672d84",
+      "bytes": 322292
+    },
+    {
+      "file": "crowded-2400-before.webp",
+      "width": 2400,
+      "height": 1371,
+      "pngSha256": "b47f5f481e877f1e6c2fc7a549d9f4c5d6bac8c4f2ce64ea10e9b72ea62d1401",
+      "webpSha256": "7d0e4c25d6cc7ed1e872b7ace8201c59aa2c34f73f997b559771609e7e0b5cb0",
+      "bytes": 344184
+    },
+    {
+      "file": "crowded-2400-after.webp",
+      "width": 2400,
+      "height": 1371,
+      "pngSha256": "83cd470fd37d6b259a41e8f1297ac990d50ac5e1281eb642a0fa5cd02788ccad",
+      "webpSha256": "6cc18b75943c848235271bc2bd8389a31b4d36008f9c0b232b17a409cb2aafe4",
+      "bytes": 371804
+    },
+    {
+      "file": "busy-neighbors-2400-after.webp",
+      "width": 2400,
+      "height": 1371,
+      "pngSha256": "a4eb8d8b358fcfd1715b98fb87e8e85847bf96a8c65ca4bb9a738cdfc99ac665",
+      "webpSha256": "8f2af85be64717f0536ccf48f7ff12bf33ff9b4635486932bc210cebf8ecd77e",
+      "bytes": 358644
+    },
+    {
+      "file": "normal-360-after.webp",
+      "width": 360,
+      "height": 1524,
+      "pngSha256": "9eb4d55aa8efa6d1c3b8ba33e25f8e8640424d1f32d050112ebb5cdd348e2d34",
+      "webpSha256": "ff1b2c2529b272298b0a75194f87aa452d906b8136ab8d77fd2954b3324cedc5",
+      "bytes": 81382
+    }
+  ],
+  "implementationCommit": "4b4e64790c83b7af25a6bbb1354290d466fcbe72",
+  "canonicalValidation": {
+    "provider": "aws",
+    "lease": "cbx_eb790c210fa7",
+    "run": "run_d157a70f336420e561e8d8126c7ef0dc",
+    "node": "24.18.1",
+    "commands": [
+      "pnpm run build:all",
+      "node --test test/dashboard-worker-bay-records-routes.test.ts",
+      "pnpm run check"
+    ],
+    "bayRoutes": {
+      "passed": 114,
+      "failed": 0
+    },
+    "separateGate": {
+      "passed": 13,
+      "failed": 0
+    },
+    "fullCheck": {
+      "cases": 6091,
+      "passed": 6073,
+      "skipped": 18,
+      "failed": 0
+    },
+    "completionMarker": "BAY_FINAL_CANONICAL_CHECK_PASS",
+    "runLimit": "Canonical phase completed; a restart interrupted that run during its later browser phase. Only the separate completed proof represented by this evidence is counted as runtime proof.",
+    "sourcePatchSha256": "707e1cec4185fa630f6f2fd8ff5dad9e2861c26e3141e44e6c2bf4b300b70e41"
+  },
+  "evidenceOnly": true,
+  "note": "Static proof artifacts only. This evidence branch is not the implementation PR branch; no workflow or runtime code is changed here."
+}
