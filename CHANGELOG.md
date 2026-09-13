@@ -21,6 +21,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ### Changed
 
+- Automatically enroll eligible Endor Pro PRs in the dedicated test repository’s autofix loop while retaining human merge and proof-approval gates. Thanks @jesse-merhi.
+
 - Keep Codex turn state updates in order so a slow `active` write cannot overwrite `validating` after completion; stop late heartbeats and abort queued telemetry when the worker exits.
 
 - Refresh pnpm to 12.4.1 and Wrangler to 4.131.0, pin setup-node v7, share workflow setup, and expose a test-concurrency environment override while preserving the adaptive CI default, full suite, coverage gates, Node 24 floor, and 48-hour release-age policy.
@@ -158,6 +160,7 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ### Fixed
 
+- Prevent label sweeps from reactivating autofix after a ready review handler completes it in the same router run.
 - Keep OpenClaw Bay controls compact and show more sampled cards in crowded lanes while preserving readable labels, focus, and observer-only navigation. Thanks @brokemac79.
 - Restore OpenClaw boundary receipts with changed-gate outputs, and preserve recovery state instead of retrying validation whose completion cannot be verified.
 - Keep comment and automerge timeline previews within their requested character limits, including the ellipsis and tiny caps.
