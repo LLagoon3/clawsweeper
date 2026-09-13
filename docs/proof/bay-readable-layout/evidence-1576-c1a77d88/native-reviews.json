@@ -1,0 +1,16 @@
+{
+  "status": "CLEAN",
+  "head": "c1a77d88a8d5b7565e677ca0608db71c9008b7f8",
+  "base": "3fb129f7ac9677bdcd771362e677b3d22473c691",
+  "logs": [
+    {
+      "file": "native-precommit.log",
+      "sha256": "2732428f68d8119eda332b6de5ed6aaa6376daee095cdd5ff0d6eefcd36f0afa"
+    },
+    {
+      "file": "native-committed.log",
+      "sha256": "1a0f581660d09bd40b99e5fb82c876b883a98350e0e1ffb1e58f21e7839d0ac0"
+    }
+  ],
+  "conclusion": "No actionable correctness issues in native precommit and committed-base reviews."
+}

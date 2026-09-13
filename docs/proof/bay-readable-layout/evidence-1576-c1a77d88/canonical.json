@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "head": "c1a77d88a8d5b7565e677ca0608db71c9008b7f8",
+  "base": "3fb129f7ac9677bdcd771362e677b3d22473c691",
+  "passed": 6136,
+  "skipped": 18,
+  "failed": 0,
+  "bayRoutesPassed": 114,
+  "separateGatePassed": 13,
+  "logSha256": "2e956e67ece6f3d5761d1a99a3fc4af420029cb95133c406f46e2ec8b7a135d6",
+  "scope": "Canonical stage completed before the subsequent monolithic runtime transport interruption. Runtime coverage completed separately in terminal batches."
+}

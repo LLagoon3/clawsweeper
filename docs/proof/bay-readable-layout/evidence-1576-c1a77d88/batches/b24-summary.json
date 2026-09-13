@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "candidate": "c1a77d88a8d5b7565e677ca0608db71c9008b7f8+patch-sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "base": "3fb129f7ac9677bdcd771362e677b3d22473c691",
+  "provider": "aws",
+  "image": "ami-0461d919be7deb53c",
+  "lease": "cbx_fe19a2d96caf",
+  "checks": [
+    {
+      "name": "real ExactReviewQueue DO admission, lifecycle finalization, batch-inclusive and direct timing projection",
+      "result": "PASS"
+    },
+    {
+      "name": "over-cap-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "mixed-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "long-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "empty-430 current-page samples, areas, chart, cohorts, controls, focus and observer-only motion",
+      "result": "PASS"
+    },
+    {
+      "name": "all browser traffic stays same-origin GET; no queue/workflow/GitHub mutation attempts",
+      "result": "PASS"
+    }
+  ],
+  "executedCases": 4,
+  "selectedWidths": "430",
+  "selectedScenarios": "over-cap,mixed,long,empty",
+  "errors": [],
+  "limits": "Controlled fixture snapshots persist through real StatusStore DO and production cached /api/status projection. Separate real ExactReviewQueue admission/finalization exercised. No live producers or upstream workflow behavior proved. Human screenshot inspection remains required."
+}

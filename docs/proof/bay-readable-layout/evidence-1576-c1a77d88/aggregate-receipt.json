@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "head": "c1a77d88a8d5b7565e677ca0608db71c9008b7f8",
+  "base": "3fb129f7ac9677bdcd771362e677b3d22473c691",
+  "cases": 95,
+  "contexts": 190,
+  "batches": 26,
+  "images": 14,
+  "sourceFiles": 1631,
+  "summarySha256": "95c28391228155fc7b37395c204db23aef875b5a44ed15cf565609261cf5c65f",
+  "planSha256": "7d8be1e3aaf7c10545fca94013521ca59f659409b47db58fc8d58d84e936ccd5"
+}

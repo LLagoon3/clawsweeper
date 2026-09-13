@@ -1,0 +1,1120 @@
+{
+  "planSha256": "7d8be1e3aaf7c10545fca94013521ca59f659409b47db58fc8d58d84e936ccd5",
+  "plan": {
+    "head": "c1a77d88a8d5b7565e677ca0608db71c9008b7f8",
+    "base": "3fb129f7ac9677bdcd771362e677b3d22473c691",
+    "tree": "462111a9a550dabbbf18ba8dc2a7df82257b5249",
+    "lease": "cbx_fe19a2d96caf",
+    "provider": "aws",
+    "image": "ami-0461d919be7deb53c",
+    "harnessSha256": "32408ff3dcef6a38b136b1ff370bdf2eb2e842438a2c89d8c92a13e0213a3237",
+    "fixturesSha256": "7202f04eeeda6b1604fcd47adb2638e5a174ac6c6a4e762370734070de9d8107",
+    "mode": "All original cases and assertions, in original order, through supported width/scenario selectors; each bounded batch must terminate successfully. Interrupted monolithic attempts are not counted.",
+    "batches": [
+      {
+        "id": "b01",
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-360",
+          "crowded-360",
+          "busy-neighbors-360",
+          "dense20-360"
+        ]
+      },
+      {
+        "id": "b02",
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "scenarios": [
+          "over-cap",
+          "mixed",
+          "long",
+          "empty"
+        ],
+        "cases": [
+          "over-cap-360",
+          "mixed-360",
+          "long-360",
+          "empty-360"
+        ]
+      },
+      {
+        "id": "b03",
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "scenarios": [
+          "stale",
+          "partial",
+          "unknown",
+          "terminal"
+        ],
+        "cases": [
+          "stale-360",
+          "partial-360",
+          "unknown-360",
+          "terminal-360"
+        ]
+      },
+      {
+        "id": "b04",
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "scenarios": [
+          "batch",
+          "missing",
+          "partial-activity",
+          "forward"
+        ],
+        "cases": [
+          "batch-360",
+          "missing-360",
+          "partial-activity-360",
+          "forward-360"
+        ]
+      },
+      {
+        "id": "b05",
+        "viewport": {
+          "width": 2400,
+          "height": 1050
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-2400",
+          "crowded-2400",
+          "busy-neighbors-2400",
+          "dense20-2400"
+        ]
+      },
+      {
+        "id": "b06",
+        "viewport": {
+          "width": 2400,
+          "height": 1050
+        },
+        "scenarios": [
+          "over-cap"
+        ],
+        "cases": [
+          "over-cap-2400"
+        ]
+      },
+      {
+        "id": "b07",
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-1920",
+          "crowded-1920",
+          "busy-neighbors-1920",
+          "dense20-1920"
+        ]
+      },
+      {
+        "id": "b08",
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "scenarios": [
+          "over-cap"
+        ],
+        "cases": [
+          "over-cap-1920"
+        ]
+      },
+      {
+        "id": "b09",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-1440",
+          "crowded-1440",
+          "busy-neighbors-1440",
+          "dense20-1440"
+        ]
+      },
+      {
+        "id": "b10",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scenarios": [
+          "over-cap",
+          "mixed",
+          "long",
+          "empty"
+        ],
+        "cases": [
+          "over-cap-1440",
+          "mixed-1440",
+          "long-1440",
+          "empty-1440"
+        ]
+      },
+      {
+        "id": "b11",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scenarios": [
+          "stale",
+          "partial",
+          "unknown",
+          "terminal"
+        ],
+        "cases": [
+          "stale-1440",
+          "partial-1440",
+          "unknown-1440",
+          "terminal-1440"
+        ]
+      },
+      {
+        "id": "b12",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scenarios": [
+          "batch",
+          "missing",
+          "partial-activity",
+          "forward"
+        ],
+        "cases": [
+          "batch-1440",
+          "missing-1440",
+          "partial-activity-1440",
+          "forward-1440"
+        ]
+      },
+      {
+        "id": "b13",
+        "viewport": {
+          "width": 1200,
+          "height": 525
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-1200",
+          "crowded-1200",
+          "busy-neighbors-1200",
+          "dense20-1200"
+        ]
+      },
+      {
+        "id": "b14",
+        "viewport": {
+          "width": 1200,
+          "height": 525
+        },
+        "scenarios": [
+          "over-cap"
+        ],
+        "cases": [
+          "over-cap-1200"
+        ]
+      },
+      {
+        "id": "b15",
+        "viewport": {
+          "width": 1199,
+          "height": 900
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-1199",
+          "crowded-1199",
+          "busy-neighbors-1199",
+          "dense20-1199"
+        ]
+      },
+      {
+        "id": "b16",
+        "viewport": {
+          "width": 1199,
+          "height": 900
+        },
+        "scenarios": [
+          "over-cap",
+          "mixed",
+          "long",
+          "empty"
+        ],
+        "cases": [
+          "over-cap-1199",
+          "mixed-1199",
+          "long-1199",
+          "empty-1199"
+        ]
+      },
+      {
+        "id": "b17",
+        "viewport": {
+          "width": 1199,
+          "height": 900
+        },
+        "scenarios": [
+          "stale",
+          "partial",
+          "unknown",
+          "terminal"
+        ],
+        "cases": [
+          "stale-1199",
+          "partial-1199",
+          "unknown-1199",
+          "terminal-1199"
+        ]
+      },
+      {
+        "id": "b18",
+        "viewport": {
+          "width": 1199,
+          "height": 900
+        },
+        "scenarios": [
+          "batch",
+          "missing",
+          "partial-activity",
+          "forward"
+        ],
+        "cases": [
+          "batch-1199",
+          "missing-1199",
+          "partial-activity-1199",
+          "forward-1199"
+        ]
+      },
+      {
+        "id": "b19",
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-768",
+          "crowded-768",
+          "busy-neighbors-768",
+          "dense20-768"
+        ]
+      },
+      {
+        "id": "b20",
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "scenarios": [
+          "over-cap",
+          "mixed",
+          "long",
+          "empty"
+        ],
+        "cases": [
+          "over-cap-768",
+          "mixed-768",
+          "long-768",
+          "empty-768"
+        ]
+      },
+      {
+        "id": "b21",
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "scenarios": [
+          "stale",
+          "partial",
+          "unknown",
+          "terminal"
+        ],
+        "cases": [
+          "stale-768",
+          "partial-768",
+          "unknown-768",
+          "terminal-768"
+        ]
+      },
+      {
+        "id": "b22",
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "scenarios": [
+          "batch",
+          "missing",
+          "partial-activity",
+          "forward"
+        ],
+        "cases": [
+          "batch-768",
+          "missing-768",
+          "partial-activity-768",
+          "forward-768"
+        ]
+      },
+      {
+        "id": "b23",
+        "viewport": {
+          "width": 430,
+          "height": 932
+        },
+        "scenarios": [
+          "normal",
+          "crowded",
+          "busy-neighbors",
+          "dense20"
+        ],
+        "cases": [
+          "normal-430",
+          "crowded-430",
+          "busy-neighbors-430",
+          "dense20-430"
+        ]
+      },
+      {
+        "id": "b24",
+        "viewport": {
+          "width": 430,
+          "height": 932
+        },
+        "scenarios": [
+          "over-cap",
+          "mixed",
+          "long",
+          "empty"
+        ],
+        "cases": [
+          "over-cap-430",
+          "mixed-430",
+          "long-430",
+          "empty-430"
+        ]
+      },
+      {
+        "id": "b25",
+        "viewport": {
+          "width": 430,
+          "height": 932
+        },
+        "scenarios": [
+          "stale",
+          "partial",
+          "unknown",
+          "terminal"
+        ],
+        "cases": [
+          "stale-430",
+          "partial-430",
+          "unknown-430",
+          "terminal-430"
+        ]
+      },
+      {
+        "id": "b26",
+        "viewport": {
+          "width": 430,
+          "height": 932
+        },
+        "scenarios": [
+          "batch",
+          "missing",
+          "partial-activity",
+          "forward"
+        ],
+        "cases": [
+          "batch-430",
+          "missing-430",
+          "partial-activity-430",
+          "forward-430"
+        ]
+      }
+    ],
+    "expectedCases": [
+      "normal-360",
+      "crowded-360",
+      "busy-neighbors-360",
+      "dense20-360",
+      "over-cap-360",
+      "mixed-360",
+      "long-360",
+      "empty-360",
+      "stale-360",
+      "partial-360",
+      "unknown-360",
+      "terminal-360",
+      "batch-360",
+      "missing-360",
+      "partial-activity-360",
+      "forward-360",
+      "normal-2400",
+      "crowded-2400",
+      "busy-neighbors-2400",
+      "dense20-2400",
+      "over-cap-2400",
+      "normal-1920",
+      "crowded-1920",
+      "busy-neighbors-1920",
+      "dense20-1920",
+      "over-cap-1920",
+      "normal-1440",
+      "crowded-1440",
+      "busy-neighbors-1440",
+      "dense20-1440",
+      "over-cap-1440",
+      "mixed-1440",
+      "long-1440",
+      "empty-1440",
+      "stale-1440",
+      "partial-1440",
+      "unknown-1440",
+      "terminal-1440",
+      "batch-1440",
+      "missing-1440",
+      "partial-activity-1440",
+      "forward-1440",
+      "normal-1200",
+      "crowded-1200",
+      "busy-neighbors-1200",
+      "dense20-1200",
+      "over-cap-1200",
+      "normal-1199",
+      "crowded-1199",
+      "busy-neighbors-1199",
+      "dense20-1199",
+      "over-cap-1199",
+      "mixed-1199",
+      "long-1199",
+      "empty-1199",
+      "stale-1199",
+      "partial-1199",
+      "unknown-1199",
+      "terminal-1199",
+      "batch-1199",
+      "missing-1199",
+      "partial-activity-1199",
+      "forward-1199",
+      "normal-768",
+      "crowded-768",
+      "busy-neighbors-768",
+      "dense20-768",
+      "over-cap-768",
+      "mixed-768",
+      "long-768",
+      "empty-768",
+      "stale-768",
+      "partial-768",
+      "unknown-768",
+      "terminal-768",
+      "batch-768",
+      "missing-768",
+      "partial-activity-768",
+      "forward-768",
+      "normal-430",
+      "crowded-430",
+      "busy-neighbors-430",
+      "dense20-430",
+      "over-cap-430",
+      "mixed-430",
+      "long-430",
+      "empty-430",
+      "stale-430",
+      "partial-430",
+      "unknown-430",
+      "terminal-430",
+      "batch-430",
+      "missing-430",
+      "partial-activity-430",
+      "forward-430"
+    ]
+  },
+  "receipts": [
+    {
+      "batch": "b01",
+      "attempt": "b01-a01",
+      "status": "PASS",
+      "cases": [
+        "normal-360",
+        "crowded-360",
+        "busy-neighbors-360",
+        "dense20-360"
+      ],
+      "contexts": 8,
+      "runId": "run_b83ed3c7e5d0d23de0a75ab44b8433a1",
+      "archiveSha256": "ab49642a8efb3b3dcf292d9df83e7ba76a4854fa9260525157aca60b71800a50",
+      "logSha256": "6312423954688dfb2f508f9fac7a1ffd4cc58edcd17e86ee33b7020b84a3a796",
+      "images": 3,
+      "summaryPath": "batches/b01-summary.json",
+      "summarySha256": "f5e6ffe112d6ccee30b6a24a91a307d2579092f5e31af7509ec25a9d7be70b01",
+      "selectedWidths": "360",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b02",
+      "attempt": "b02-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-360",
+        "mixed-360",
+        "long-360",
+        "empty-360"
+      ],
+      "contexts": 8,
+      "runId": "run_3f86f92a7697b94e5dd32e8a58fc368a",
+      "archiveSha256": "ba2b644bdd32e47b10a41cdb4d3e003f899ebe3cbb3cefa2cc3be673ad170a54",
+      "logSha256": "bf8e8d97e53f35753d91c06892bccb12566b8888413230e895d3afb0d7ce28ca",
+      "images": 0,
+      "summaryPath": "batches/b02-summary.json",
+      "summarySha256": "ad86712e9a0f8a141b5a329f4fc0b6fc74752b7cee5708d4771991d3e6456a7f",
+      "selectedWidths": "360",
+      "selectedScenarios": "over-cap,mixed,long,empty"
+    },
+    {
+      "batch": "b03",
+      "attempt": "b03-a01",
+      "status": "PASS",
+      "cases": [
+        "stale-360",
+        "partial-360",
+        "unknown-360",
+        "terminal-360"
+      ],
+      "contexts": 8,
+      "runId": "run_ecee10ebc074849ba97be92c06951da3",
+      "archiveSha256": "2663ca80feea9c4e1e6423a9b3a765c838dcaf06ff4b242b817da35c44999438",
+      "logSha256": "211ff8a9cee81e68c043082fef0d2161e36966b091616d65cd44f2957f8afebe",
+      "images": 0,
+      "summaryPath": "batches/b03-summary.json",
+      "summarySha256": "11fdbf026d8cdfbecf1653aa9afb01a88cacbc9fa52f920368a6547adf317fa8",
+      "selectedWidths": "360",
+      "selectedScenarios": "stale,partial,unknown,terminal"
+    },
+    {
+      "batch": "b04",
+      "attempt": "b04-a01",
+      "status": "PASS",
+      "cases": [
+        "batch-360",
+        "missing-360",
+        "partial-activity-360",
+        "forward-360"
+      ],
+      "contexts": 8,
+      "runId": "run_92eef6bcdcc33a55ebf0cffe287b459d",
+      "archiveSha256": "35375667239786fb51727a381b4d329eee9b9ad36c9c23b3ad929be325bfba48",
+      "logSha256": "8f2f227917c8e7e7a53f0b7a6500feb7635c27affe70f9ccb42ba2c5440e3d06",
+      "images": 0,
+      "summaryPath": "batches/b04-summary.json",
+      "summarySha256": "a20a3d474ec7a65259ebbb5d3ae3964aa452df7f2d1b066c315dc1309fb5e9d7",
+      "selectedWidths": "360",
+      "selectedScenarios": "batch,missing,partial-activity,forward"
+    },
+    {
+      "batch": "b05",
+      "attempt": "b05-a01",
+      "status": "PASS",
+      "cases": [
+        "normal-2400",
+        "crowded-2400",
+        "busy-neighbors-2400",
+        "dense20-2400"
+      ],
+      "contexts": 8,
+      "runId": "run_5e54cd74802fb4842f67873380056a0a",
+      "archiveSha256": "10583f17abe050858981747de62f47f9cb5bcef70fbfc944dcba8f3637006d79",
+      "logSha256": "76ee0a95fe3bb95f2522ccb95b96eb0f8ace26b77112feb2b7253f1ad146e331",
+      "images": 3,
+      "summaryPath": "batches/b05-summary.json",
+      "summarySha256": "866edf145252b9bc396e13b721ec5349c97634ce05eff178dcec90b81e221154",
+      "selectedWidths": "2400",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b06",
+      "attempt": "b06-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-2400"
+      ],
+      "contexts": 2,
+      "runId": "run_fcb6f28de82eb92eda2be4e7467b47b2",
+      "archiveSha256": "712b2c418035b5817592aa856cc08fc6cc9a22bfc2f442ae3bf25821dc2f8d33",
+      "logSha256": "219f509317d653b896cb62e97f223833d2704aff7376ab93fd6e6734418ff8c4",
+      "images": 0,
+      "terminalReceiptRecovery": {
+        "originalCliExit": 7,
+        "recoveredVia": "crabbox receipt followed by crabbox verify",
+        "runId": "run_fcb6f28de82eb92eda2be4e7467b47b2",
+        "receiptSha256": "a85a0ba43d2bd7aef8d969664ec5272cef2e2ae6d22a55aeafb927a96e717cf2",
+        "signer": "sha256:49636ed4ccd3b8179f21c1239e7c7ac362f0bd96ce2f1154ec9245b54f7660cb",
+        "signatureTrust": "self-signed receipt retrieved through the configured broker; not a claim of third-party trust"
+      },
+      "summaryPath": "batches/b06-summary.json",
+      "summarySha256": "44173f32c9b75542d35a8e8b7045a8976cdcdf2c6f778492c4824f7d32274875",
+      "selectedWidths": "2400",
+      "selectedScenarios": "over-cap"
+    },
+    {
+      "batch": "b07",
+      "attempt": "b07-a01",
+      "status": "PASS",
+      "cases": [
+        "normal-1920",
+        "crowded-1920",
+        "busy-neighbors-1920",
+        "dense20-1920"
+      ],
+      "contexts": 8,
+      "runId": "run_aa224eb01bfc1c588ce26ba9f9c4380c",
+      "archiveSha256": "fadd1ca2972eb7387ea22076295b79d4f9bafee133289c04e7e23227f24250b2",
+      "logSha256": "23ea9ff2c0b6e39a8d7a5b1a50a9909faab6110ddd453b4fe8d7c84464b56bcc",
+      "images": 0,
+      "summaryPath": "batches/b07-summary.json",
+      "summarySha256": "91e971561140cd916ad346e090ddcea00ae916ac79608b1841d49978e97405dd",
+      "selectedWidths": "1920",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b08",
+      "attempt": "b08-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-1920"
+      ],
+      "contexts": 2,
+      "runId": "run_d4ae3fe704ac241ca43612b8ee0d880a",
+      "archiveSha256": "a731f64b971a0d64b51a81927706177b7f786723ce3ae04df5fead8540f02b3f",
+      "logSha256": "f2382264f5aaef315be13d4e73bca070462fbc49c791bca3b5f173908a9d1497",
+      "images": 0,
+      "summaryPath": "batches/b08-summary.json",
+      "summarySha256": "f0f5b388b152ae393194e2deb6d38c56f1b86b2691ba3f13741529322944418d",
+      "selectedWidths": "1920",
+      "selectedScenarios": "over-cap"
+    },
+    {
+      "batch": "b09",
+      "attempt": "b09-a01",
+      "status": "PASS",
+      "cases": [
+        "normal-1440",
+        "crowded-1440",
+        "busy-neighbors-1440",
+        "dense20-1440"
+      ],
+      "contexts": 8,
+      "runId": "run_a4d5006c6a1c6ad90ffa8bde8942ad45",
+      "archiveSha256": "94dd7dcd14d6bebada2218fc1393f54b916e550dc57f69d80e5eea73d01e390e",
+      "logSha256": "fdc8b4ac56baa9fe6dc7d616ed4bdc585371b256b32b9a2b9ca80d76a2418e59",
+      "images": 8,
+      "summaryPath": "batches/b09-summary.json",
+      "summarySha256": "75fe2aa58164e7a79d7b1e218aaf48c24e6d77485b1b1887545a0ccff0fbf6e1",
+      "selectedWidths": "1440",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b10",
+      "attempt": "b10-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-1440",
+        "mixed-1440",
+        "long-1440",
+        "empty-1440"
+      ],
+      "contexts": 8,
+      "runId": "run_610509087d7bf9cbc3ece759368ccb7d",
+      "archiveSha256": "6d93eba3ba3229e8f6d755b2a204c420179494a9676f9ba59370ae2a2760c3c1",
+      "logSha256": "fa71cb2cf8f95390b96237f17f0bea49d86adc3af0585eb14679b3da7438992e",
+      "images": 0,
+      "summaryPath": "batches/b10-summary.json",
+      "summarySha256": "29a6a4360d4e09aeef76534c9fc751acca49a8df90304a5ca68f05a7ae4224d7",
+      "selectedWidths": "1440",
+      "selectedScenarios": "over-cap,mixed,long,empty"
+    },
+    {
+      "batch": "b11",
+      "attempt": "b11-a01",
+      "status": "PASS",
+      "cases": [
+        "stale-1440",
+        "partial-1440",
+        "unknown-1440",
+        "terminal-1440"
+      ],
+      "contexts": 8,
+      "runId": "run_1299a949333c23f498ace431956a726b",
+      "archiveSha256": "46e501fe875573c2d0d54864408443c6e05a1f8b45fa69eb934e0ff64dde2d31",
+      "logSha256": "acc75f9899cddff19280ab270d39a4490ce6f0f879890d63fb29815f66706e93",
+      "images": 0,
+      "summaryPath": "batches/b11-summary.json",
+      "summarySha256": "43bc8d0a112eda68d23c300c70f292333688b41490e33078c7c6d6444be37150",
+      "selectedWidths": "1440",
+      "selectedScenarios": "stale,partial,unknown,terminal"
+    },
+    {
+      "batch": "b12",
+      "attempt": "b12-a01",
+      "status": "PASS",
+      "cases": [
+        "batch-1440",
+        "missing-1440",
+        "partial-activity-1440",
+        "forward-1440"
+      ],
+      "contexts": 8,
+      "runId": "run_520dd0a90f663cff01d0b3f528d7e855",
+      "archiveSha256": "b2794747a7f7a612a4a2f3974428e2eac561001f893852ec5cb05cd76e09496f",
+      "logSha256": "e889410dcfa8453b2010406e8c208aba4fb39f35b2d926af71e33bb5cbacfac4",
+      "images": 0,
+      "summaryPath": "batches/b12-summary.json",
+      "summarySha256": "b1e0d3913c89ffb6044f872d3bea79f7f3a1b121c851b77870762c88746458b9",
+      "selectedWidths": "1440",
+      "selectedScenarios": "batch,missing,partial-activity,forward"
+    },
+    {
+      "batch": "b13",
+      "attempt": "b13-a01",
+      "status": "PASS",
+      "cases": [
+        "normal-1200",
+        "crowded-1200",
+        "busy-neighbors-1200",
+        "dense20-1200"
+      ],
+      "contexts": 8,
+      "runId": "run_a2eb17006f945b99fd46900d465a38c5",
+      "archiveSha256": "2ae871bcc3fe7913d58df3e6534472d236f2f810dc4b45362e7e73655d4bf39a",
+      "logSha256": "ea4df5e1bf88b3a16021823adf1ca6ef65b3dd13c356617394063c8b80cc72f6",
+      "images": 0,
+      "summaryPath": "batches/b13-summary.json",
+      "summarySha256": "c782258145937581c5d5fd6ebe5b30d2a3da8536bb50304010bb437dfd29e25d",
+      "selectedWidths": "1200",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b14",
+      "attempt": "b14-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-1200"
+      ],
+      "contexts": 2,
+      "runId": "run_aa533f8fbf7827584790fb5cf8eb9d5b",
+      "archiveSha256": "a064eae983bcaad8a72c84d6e71f783aadd1745d7f145bc89977afdbe71bb89d",
+      "logSha256": "ce24578684fcf42c4a78dec50aa7b91c8f3194f7401e09278f510d91feafe64a",
+      "images": 0,
+      "summaryPath": "batches/b14-summary.json",
+      "summarySha256": "8bb79cc942e027aecfab32a806accc06a712b390f8ff14ca60b9423a9ca87349",
+      "selectedWidths": "1200",
+      "selectedScenarios": "over-cap"
+    },
+    {
+      "batch": "b15",
+      "attempt": "b15-a02",
+      "status": "PASS",
+      "cases": [
+        "normal-1199",
+        "crowded-1199",
+        "busy-neighbors-1199",
+        "dense20-1199"
+      ],
+      "contexts": 8,
+      "runId": "run_0f9caad13b7498d113c4c454ac6e92bf",
+      "archiveSha256": "a6121f0177308ead669930888f4b63933b0d947ad8f541ca2b8eb9bd0db16c82",
+      "logSha256": "29358b207868bbd83d74c0b6710807f94bd88b716fde977888a84c9d4ac4c983",
+      "images": 0,
+      "summaryPath": "batches/b15-summary.json",
+      "summarySha256": "e226bec5a7e248a37944533f8ede8cd004951593e3096543e95543c227ac3e49",
+      "selectedWidths": "1199",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b16",
+      "attempt": "b16-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-1199",
+        "mixed-1199",
+        "long-1199",
+        "empty-1199"
+      ],
+      "contexts": 8,
+      "runId": "run_c054f111589c0008bec2cfbc83f525d0",
+      "archiveSha256": "09e0c639474ddbc464d459e3d0d0e952351da5ecac45ee83525e4729452425a9",
+      "logSha256": "accb686daad58725534447eaf5c64643282accc8c3005c95fa9dcc7ed37711d9",
+      "images": 0,
+      "summaryPath": "batches/b16-summary.json",
+      "summarySha256": "80766cd5de63cca48706eb78e18dc0dd0ba536d96e5dc9efad3ff26b08760f6c",
+      "selectedWidths": "1199",
+      "selectedScenarios": "over-cap,mixed,long,empty"
+    },
+    {
+      "batch": "b17",
+      "attempt": "b17-a01",
+      "status": "PASS",
+      "cases": [
+        "stale-1199",
+        "partial-1199",
+        "unknown-1199",
+        "terminal-1199"
+      ],
+      "contexts": 8,
+      "runId": "run_227e28622dbc6330c2f1fe095add7689",
+      "archiveSha256": "b465640624ee254c8ceab7e8b85e86fd9fe80708102498880ad84dae63aa0d24",
+      "logSha256": "26af5a4b6dd905c0f2cbb09476a61b01d0be7032d7f71669a0ecbf048d27bef9",
+      "images": 0,
+      "summaryPath": "batches/b17-summary.json",
+      "summarySha256": "d153ddcdd69f4ecea024f90c30988d68962cea598b29c511a99e20c802e2badb",
+      "selectedWidths": "1199",
+      "selectedScenarios": "stale,partial,unknown,terminal"
+    },
+    {
+      "batch": "b18",
+      "attempt": "b18-a01",
+      "status": "PASS",
+      "cases": [
+        "batch-1199",
+        "missing-1199",
+        "partial-activity-1199",
+        "forward-1199"
+      ],
+      "contexts": 8,
+      "runId": "run_756285be79fe54195b8c6d65b1177031",
+      "archiveSha256": "1ec0807f53a122635f5098b0ed546b87e54c4771da5e96f6db1f3ab8596dfaaa",
+      "logSha256": "05b45164ad09670b2f437ec52c0ff61859a58b5604ccb72f0f3360e794954c07",
+      "images": 0,
+      "summaryPath": "batches/b18-summary.json",
+      "summarySha256": "29cee69073813d2acb0548e07ff1ee4096ca256c4421046189452cc8ec4e8a6a",
+      "selectedWidths": "1199",
+      "selectedScenarios": "batch,missing,partial-activity,forward"
+    },
+    {
+      "batch": "b19",
+      "attempt": "b19-a01",
+      "status": "PASS",
+      "cases": [
+        "normal-768",
+        "crowded-768",
+        "busy-neighbors-768",
+        "dense20-768"
+      ],
+      "contexts": 8,
+      "runId": "run_30197727a42c0e3ee8765d10839915d5",
+      "archiveSha256": "3a15d0c6a1c740ef8f3672fb7c52b0be76f26d6ff40a0084223c5b081a1afd03",
+      "logSha256": "7e9fa5096ad8d42cb4373caf3c32db7058b87368fd04b89978ed3a82654a0b9b",
+      "images": 0,
+      "summaryPath": "batches/b19-summary.json",
+      "summarySha256": "23a6a53854eb5f17b8ef3632f4cc4b53936d1bf0c5d33b4377c16f0b54d60d6b",
+      "selectedWidths": "768",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b20",
+      "attempt": "b20-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-768",
+        "mixed-768",
+        "long-768",
+        "empty-768"
+      ],
+      "contexts": 8,
+      "runId": "run_5e723233b223029b2172d0fa7c949fac",
+      "archiveSha256": "4ea7ad7ea4250367a15f9732f8a742c6be375840904f6444651fed91321c3fa1",
+      "logSha256": "0d403d310c2db9c9bbc95cd9095ff7d06250d5adb7513d12e0d42f4e905d1c10",
+      "images": 0,
+      "summaryPath": "batches/b20-summary.json",
+      "summarySha256": "29247ca91645a16ec8d18d516abda3c2e1bf26f1918a9e705277b6c5c028116e",
+      "selectedWidths": "768",
+      "selectedScenarios": "over-cap,mixed,long,empty"
+    },
+    {
+      "batch": "b21",
+      "attempt": "b21-a01",
+      "status": "PASS",
+      "cases": [
+        "stale-768",
+        "partial-768",
+        "unknown-768",
+        "terminal-768"
+      ],
+      "contexts": 8,
+      "runId": "run_0edf70543a1324b16dfff09d421e707b",
+      "archiveSha256": "23f488df6607c44ad46a5f6a88b39b75fc156a7a03d8d579ca6a0c31c39d5319",
+      "logSha256": "419e4b68b41fffd635c0ad07afa444f6f8352d7a02017c9a195730fdfe4f740d",
+      "images": 0,
+      "summaryPath": "batches/b21-summary.json",
+      "summarySha256": "e19d308a8bbb861aaa0f8c1a1199eb7ac85abfe6b26f9688c0b31721a653ccd4",
+      "selectedWidths": "768",
+      "selectedScenarios": "stale,partial,unknown,terminal"
+    },
+    {
+      "batch": "b22",
+      "attempt": "b22-a01",
+      "status": "PASS",
+      "cases": [
+        "batch-768",
+        "missing-768",
+        "partial-activity-768",
+        "forward-768"
+      ],
+      "contexts": 8,
+      "runId": "run_12674fc6382cc08519e9620ccf63a23c",
+      "archiveSha256": "8d16805698e63b40adfb8dd4abf401c0d38be7e4c6a96948d1978bc71d493cfa",
+      "logSha256": "c53883fe212d8e5cedfd676b4fc960f424e79b6fbd6041c022601f3f5a85a77d",
+      "images": 0,
+      "summaryPath": "batches/b22-summary.json",
+      "summarySha256": "31069d512a71b04a588616fb920b07135538ae98451c3f8784a0b347605be7d9",
+      "selectedWidths": "768",
+      "selectedScenarios": "batch,missing,partial-activity,forward"
+    },
+    {
+      "batch": "b23",
+      "attempt": "b23-a01",
+      "status": "PASS",
+      "cases": [
+        "normal-430",
+        "crowded-430",
+        "busy-neighbors-430",
+        "dense20-430"
+      ],
+      "contexts": 8,
+      "runId": "run_ddf4624882977497d258b576f7ebe330",
+      "archiveSha256": "db84a9580756d8845c94c5971f781234f8455493183943032b79955f6e33c1b5",
+      "logSha256": "d86f42d487a22ead4331c8b4aef611a6e2e97a93288a571016d1fb2a6c406e1b",
+      "images": 0,
+      "summaryPath": "batches/b23-summary.json",
+      "summarySha256": "750c3b6ff3f5f3abbea800424997d720da1639ab89d1ffaaab6d3596698a281e",
+      "selectedWidths": "430",
+      "selectedScenarios": "normal,crowded,busy-neighbors,dense20"
+    },
+    {
+      "batch": "b24",
+      "attempt": "b24-a01",
+      "status": "PASS",
+      "cases": [
+        "over-cap-430",
+        "mixed-430",
+        "long-430",
+        "empty-430"
+      ],
+      "contexts": 8,
+      "runId": "run_fc8e66a64306820b78bd9d9ed87f61bd",
+      "archiveSha256": "88888f040c6604090c4e62a61ef11eb128c7ac383d8d9677171e004504e51207",
+      "logSha256": "dc798dcc305b4ce7b544eb851ae484d8a8d1b3ed5fe5463c228db8c375609cb3",
+      "images": 0,
+      "summaryPath": "batches/b24-summary.json",
+      "summarySha256": "c60193dcc74e7ad1cd39ce1bd64c11f62bca83d07d1f179cd0ceba8229343432",
+      "selectedWidths": "430",
+      "selectedScenarios": "over-cap,mixed,long,empty"
+    },
+    {
+      "batch": "b25",
+      "attempt": "b25-a01",
+      "status": "PASS",
+      "cases": [
+        "stale-430",
+        "partial-430",
+        "unknown-430",
+        "terminal-430"
+      ],
+      "contexts": 8,
+      "runId": "run_fb7b1deba5ec4dc55f95c407890b47f8",
+      "archiveSha256": "6ecacd68aeeea21d850fee5eb205cc57f986dfa0ff9be561c0b237f9db419b18",
+      "logSha256": "4fdb482a4235bcd58fe39a249626b286eb01706aef2ab7ed58321aceb2c60db5",
+      "images": 0,
+      "summaryPath": "batches/b25-summary.json",
+      "summarySha256": "72b40a4f7f2437bab426996bd38c808161745075a68ee90f2575c80c3e5e9705",
+      "selectedWidths": "430",
+      "selectedScenarios": "stale,partial,unknown,terminal"
+    },
+    {
+      "batch": "b26",
+      "attempt": "b26-a01",
+      "status": "PASS",
+      "cases": [
+        "batch-430",
+        "missing-430",
+        "partial-activity-430",
+        "forward-430"
+      ],
+      "contexts": 8,
+      "runId": "run_f1416b0f5210be09479febc0384a9749",
+      "archiveSha256": "a6f48fb88b9aff7e06505f13fc5e200539c4ad14fa5aaeed2ecabe39d6c2e00e",
+      "logSha256": "b5873197d91a0acc42e3e586377a7e39ae12db8ee06dcb54c8e86bf3478185b7",
+      "images": 0,
+      "summaryPath": "batches/b26-summary.json",
+      "summarySha256": "b0f2370dce98481d855eedf95fefd560f73b23831a51f0390f56753e31d94897",
+      "selectedWidths": "430",
+      "selectedScenarios": "batch,missing,partial-activity,forward"
+    }
+  ],
+  "excludedAttempts": [
+    {
+      "batch": "b15",
+      "attempt": "b15-a01",
+      "startedAt": "2026-09-13T19:46:55.187Z",
+      "failurePhase": "pre-admission lease lookup timeout; no runtime command started",
+      "failureEvidence": "b15-a01.log"
+    }
+  ],
+  "controllerExecution": "Resumable serial execution. Only verified terminal workload results are counted; receipt-publication recoveries are recorded per batch, and unstarted/interrupted attempts are not relabeled passed."
+}

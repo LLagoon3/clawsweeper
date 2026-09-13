@@ -1,0 +1,114 @@
+{
+  "head": "c1a77d88a8d5b7565e677ca0608db71c9008b7f8",
+  "status": "PASS",
+  "reviewer": "RoboClaw, direct AI image-viewer inspection; not a claim of human approval",
+  "images": [
+    {
+      "file": "dense20-360-after.webp",
+      "sha256": "66f72923a987955c02ed5f53550c0121f2ea3f36a2aeee99e95cb5b1ee305f5c",
+      "batch": "b01-a01",
+      "status": "PASS",
+      "observations": "Twenty compact crustaceans are visible in five columns and four rows. Area navigation, sampled-items button and footer remain clear."
+    },
+    {
+      "file": "dense20-360-finder.webp",
+      "sha256": "98c03ffbc0d100943817e7fa7833b10336efd2d85f075fd17eecc5725489fff5",
+      "batch": "b01-a01",
+      "status": "PASS",
+      "observations": "Enlarged outlined finder preview stays within the phone viewport; selected label and run duration are legible, with area navigation unobscured."
+    },
+    {
+      "file": "dense20-360-touch-inspector.webp",
+      "sha256": "c6867344bb5ce9b75206c166915f21cd9df82d48e6ef21ac68162e668aa60560",
+      "batch": "b01-a01",
+      "status": "PASS",
+      "observations": "Inspector stage, source, reference and read-only links are readable; close control is accessible. Long heading wraps, while the reference number is repeated intact in its field."
+    },
+    {
+      "file": "dense20-2400-before.webp",
+      "sha256": "42ec3d23fe0a00f4253d942ab0af7f39c1d81757019b3cb870d944b9ffed3547",
+      "batch": "b05-a01",
+      "status": "PASS",
+      "observations": "Matched baseline shows the older larger cards and overflow disclosure; distinct from the current denser after frame at the same viewport width."
+    },
+    {
+      "file": "dense20-2400-after.webp",
+      "sha256": "628af4c05f50b1733c43904e5104da6cd2a17fc24c9a0c52aae2d2cf45d7d4dc",
+      "batch": "b05-a01",
+      "status": "PASS",
+      "observations": "Twenty compact genuine crustaceans per active lane are visible; headings, sampled-list buttons, terminal overflow disclosures, and footer remain clear. Taller narrow-desktop beach is intentional."
+    },
+    {
+      "file": "normal-2400-after.webp",
+      "sha256": "f4ade93989a4ecc03155d5277f854dc6329c0df484dcc4906d6f67ea33b23b8a",
+      "batch": "b05-a01",
+      "status": "PASS",
+      "observations": "Sparse scene retains organic placement and only the available samples; no artificial fill to twenty. Toolbar, lane labels, pool states, and footer are clear."
+    },
+    {
+      "file": "dense20-1440-before.webp",
+      "sha256": "d5b4dc1341cca128c8e725a81af452087e1d5b9c56a860da8539b75eb9cc056a",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "Matched baseline shows the older larger cards and overflow disclosure; distinct from the current denser after frame at the same viewport width."
+    },
+    {
+      "file": "dense20-1440-after.webp",
+      "sha256": "fb9d151d4e37a438832092b56d6bf647c5769cae0687d9cab6bf3eb325b0fc95",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "Twenty compact genuine crustaceans per active lane are visible; headings, sampled-list buttons, terminal overflow disclosures, and footer remain clear. Taller narrow-desktop beach is intentional."
+    },
+    {
+      "file": "dense20-1440-hover.webp",
+      "sha256": "8939877e571451de0b95fbd0dec312009f133d8bdffbfa2ba4cb1ed3b6c6ae2b",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "Actual hover or keyboard-focus preview enlarges the creature and label with a clear retained outline; selected contents are readable and controls remain above the preview. The two captures are distinct."
+    },
+    {
+      "file": "dense20-1440-focus.webp",
+      "sha256": "0c353d7ff96d7ca6f26cbfc011d776ffd9f05c8ebf8a562a5a3bf2c04c56c860",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "Actual hover or keyboard-focus preview enlarges the creature and label with a clear retained outline; selected contents are readable and controls remain above the preview. The two captures are distinct."
+    },
+    {
+      "file": "dense20-1440-ready.webp",
+      "sha256": "ea0709a1770634e65ef96acc35d4a1fb5b1e06322798011092525c1b171b55aa",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "Selected label and duration are legible and ready styling is visible. The unchanged legacy pennant clips the final edge of its text; this is recorded as pre-existing, not a newly introduced density defect. Sweeper is in an intended active animation."
+    },
+    {
+      "file": "dense20-1440-confirming.webp",
+      "sha256": "b0a9ec55f1dabf48e6c7a86040117a275273d59e02caa7877744f871a7cbfd43",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "CHECKING pill, selected reference, creature, duration, and outline are readable and contained within the viewport."
+    },
+    {
+      "file": "dense20-1440-edge-top.webp",
+      "sha256": "aa1911f89eb58a59290e8b806f4e87813a435efb5f86a18276d4d88d93095738",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "Top-row preview has a clear outline and readable label, remains inside the beach, and does not cover the toolbar."
+    },
+    {
+      "file": "dense20-1440-edge-bottom.webp",
+      "sha256": "6c8dd45f138b9b53ef1a4d8fcc1fd160ac6a80a121adf9adfbeae318fa5ebd51",
+      "batch": "b09-a01",
+      "status": "PASS",
+      "observations": "Bottom-row enlarged preview remains within the visible viewport, with selected reference and duration readable; intentional page scrolling does not hide the preview."
+    }
+  ],
+  "limits": [
+    "RoboClaw inspected every current full-resolution artifact through the image viewer; this is AI visual assessment, not a claim that a human opened the screenshots.",
+    "Header emoji font fallback, long mobile inspector-heading wrapping, and the legacy READY pennant text edge are pre-existing limitations, not introduced density defects.",
+    "Enlarged previews intentionally overlay neighboring creatures; scrolling and the active sweeper animation are not misrepresented as settled whole-page states.",
+    "Visual inspection is separate from the still-required complete runtime matrix, current hosted review, and CI gates."
+  ],
+  "reviewedAt": "2026-09-13T19:46:23.675Z",
+  "reviewedCount": 14,
+  "humanApprovalClaimed": false
+}

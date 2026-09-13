@@ -1,0 +1,982 @@
+[
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "arriving",
+    "sweeping": true,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": true,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  },
+  {
+    "stage": "reviewing",
+    "sweeping": false,
+    "scripted": false,
+    "transform": "none",
+    "bounded": true
+  }
+]
