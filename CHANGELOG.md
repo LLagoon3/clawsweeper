@@ -7,6 +7,13 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ## 0.3.1 - Unreleased
 
+- Wait for the exact-review queue to become available before declaring a dashboard deployment ready, while retaining the deployment deadline and all smoke checks.
+
+- Fix OpenClaw Bay refusing to load inside the Team dashboard while continuing to block embedding by other sites.
+
+- Keep webhook receipt validation deterministic when fixed test timestamps pass their 30-day retention window.
+- Refresh Markdown rendering and Wrangler patches, Node 24.21.0 repair runners and E2E images, Bun 1.4.2, and the OpenClaw 2026.9.4 runner while preserving the 48-hour dependency release window.
+
 **Highlights:** Preserve later review evidence, reject forged report findings, bound stalled repair calls, and recheck paired-close eligibility before mutations.
 
 ### Removed
@@ -20,6 +27,8 @@ checkpoint, and status-only commits are intentionally omitted.
 - Deleted the monthly `state-compaction.yml` history rewrite of `openclaw/clawsweeper-state`, removing one of the last writers ahead of that repository's retirement.
 
 ### Changed
+
+- Restore OpenClaw changed-gate receipts, caches, and disposable outputs for strict `pnpm run`, selector, and environment-prefixed commands without granting root artifact exemptions to workspace scripts.
 
 - Automatically enroll eligible Endor Pro PRs in the dedicated test repository’s autofix loop while retaining human merge and proof-approval gates. Thanks @jesse-merhi.
 

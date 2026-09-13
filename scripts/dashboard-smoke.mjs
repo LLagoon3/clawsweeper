@@ -90,7 +90,8 @@ async function main() {
   const bayCsp = bayResponse.headers.get("content-security-policy") || "";
   if (
     !bayCsp.includes("connect-src 'self' https://*.openclaw.ai") ||
-    !bayCsp.includes("frame-ancestors 'none'")
+    !bayCsp.includes("frame-ancestors https://team.openclaw.ai;") ||
+    bayResponse.headers.get("x-frame-options") !== null
   ) {
     throw new Error("Bay is missing its expected content security policy");
   }
@@ -184,8 +185,17 @@ export async function waitForDashboardDeployment({
         lastObserved = `HTTP ${response.status}`;
       } else {
         const health = await response.json();
-        if (health.ok === true && health.deployment_sha === expectedSha) return health;
-        lastObserved = `deployment ${String(health.deployment_sha || "unknown")}`;
+        if (health.ok === true && health.deployment_sha === expectedSha) {
+          const queueResponse = await fetchImpl(`${baseUrl}/api/exact-review-queue`, {
+            cache: "no-store",
+            signal: AbortSignal.timeout(Math.min(10_000, Math.max(1, deadline - now()))),
+          });
+          await queueResponse.body?.cancel();
+          if (queueResponse.ok) return health;
+          lastObserved = `queue HTTP ${queueResponse.status}`;
+        } else {
+          lastObserved = `deployment ${String(health.deployment_sha || "unknown")}`;
+        }
       }
     } catch (error) {
       lastObserved = error instanceof Error ? error.message : String(error);
