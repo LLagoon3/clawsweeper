@@ -7,6 +7,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ## 0.3.1 - Unreleased
 
+- Keep PR source hydration's GitHub metadata requests, retries, and rate-limit checks within its existing deadline.
+
 - Keep confirmed validation timeouts primary when the subsequent checkout identity proof is inconclusive, retaining both errors and blocking reuse until recovery.
 
 - Give OpenClaw repairs a configurable 20-minute validation budget while retaining the eight-minute default elsewhere, and report confirmed timeouts after reaping command trees and cleaning newly generated ownership locks.
