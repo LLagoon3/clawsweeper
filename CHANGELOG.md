@@ -187,6 +187,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ### Fixed
 
+- Accept sufficient recorded upgrade proof without treating serialized contributor-action metadata as a compatibility blocker; preserve missing-proof and override safeguards. Thanks @roboclaw-bot for the report and @goutamadwant for the fix.
+
 - Prevent label sweeps from reactivating autofix after a ready review handler completes it in the same router run.
 - Keep OpenClaw Bay controls compact and show more sampled cards in crowded lanes while preserving readable labels, focus, and observer-only navigation. Thanks @brokemac79.
 - Restore OpenClaw boundary receipts with changed-gate outputs, and preserve recovery state instead of retrying validation whose completion cannot be verified.
