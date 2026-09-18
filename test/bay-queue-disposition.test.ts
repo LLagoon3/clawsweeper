@@ -74,6 +74,7 @@ test("browser reference sanitizer preserves only bounded queue dispositions", as
   const html = bayHtml();
   const names = [
     "bayObject",
+    "strictBayReviewFailure",
     "strictBayCount",
     "strictBayTimestamp",
     "strictBayRepository",
@@ -82,15 +83,22 @@ test("browser reference sanitizer preserves only bounded queue dispositions", as
     "strictBayReferenceTiming",
     "strictBayReference",
   ];
-  const source = names
-    .map((name) => {
-      const line = html
-        .split("\n")
-        .find((line) => line.trimStart().startsWith(`function ${name}(`));
-      assert.ok(line, name);
-      return line;
-    })
-    .join("\n");
+  const dictionary = html
+    .split("\n")
+    .find((line) => line.trimStart().startsWith("var BAY_REVIEW_FAILURE_EXPLANATIONS="));
+  assert.ok(dictionary);
+  const source =
+    dictionary +
+    "\n" +
+    names
+      .map((name) => {
+        const line = html
+          .split("\n")
+          .find((line) => line.trimStart().startsWith(`function ${name}(`));
+        assert.ok(line, name);
+        return line;
+      })
+      .join("\n");
   const parse = runInNewContext(source + "\nstrictBayReference", {
     STAGES: ["repairing", "reviewing"],
     MAX_BAY_COUNT: 10000,
@@ -119,4 +127,22 @@ test("browser reference sanitizer preserves only bounded queue dispositions", as
       .queue_disposition,
     undefined,
   );
+});
+
+test("dispatch recovery exhaustion stays neutral queue attention without claiming a review ran", async () => {
+  const item = unclaimedExactReviewQueueItem(990097, "990097");
+  item.state = "parked";
+  item.parkedReason = "dispatch_rejected";
+  item.parkedRecoveryAttempts = 3;
+  item.reviewFailureAttempts = 0;
+  const projection = exactReviewQueueBayProjection([item]);
+  assert.equal(projection.items[0]?.queue_disposition, "parked");
+  const { bayReviewStatusScript } = await import("../dashboard/bay-review-status.ts");
+  const { runInNewContext } = await import("node:vm");
+  const status = runInNewContext(bayReviewStatusScript + ";bayReviewStatus")({
+    ...projection.items[0],
+    source: "queue",
+  });
+  assert.equal(status.type, "Stopped queue work");
+  assert.doesNotMatch(JSON.stringify(status), /Stopped review|Review stopped|Retries exhausted/);
 });
