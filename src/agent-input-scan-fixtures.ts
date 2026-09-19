@@ -420,7 +420,7 @@ export function omitReviewedFixtureReferences(text: string): string {
     .map((line) => {
       if (!line.includes("://")) return line;
       // A canonical Git patch prefixes one marker to the exact source line.
-      const prefixes = /^[ +\-]/.test(line) ? ["", line[0]!] : [""];
+      const prefixes = /^[ +-]/.test(line) ? ["", line[0]!] : [""];
       for (const prefix of prefixes) {
         const candidate = line.slice(prefix.length);
         const source = REVIEWED_CONTEXT_LINES.get(

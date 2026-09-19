@@ -4,8 +4,8 @@
   "headSha": "27913cfe9700b554a3d00dd72b877b7b299ce892",
   "verification": "canonical enabled",
   "mode": "serialized",
-  "hostSourceSha256": "82bdf0cb0e42abb25de20f68f5bd6d358ad8697f0220228e42cbfc80bfbe370c",
-  "hostCompiledSha256": "e5c2750185ebd7884fcf8ca2f9462412a5069d7dc5dbb15b4b71bf32d514527b",
+  "hostSourceSha256": "efb58bdeab0b7b2bb3ee059a24ee1438adc4ffa6077cb5327542e0e8a6e0dc51",
+  "hostCompiledSha256": "827780a09828263402b63a9e9bb27300773245f1e9b87d75d700838ef4f7606d",
   "result": "admitted",
   "notices": [
     {
@@ -19,7 +19,7 @@
           "blob": "fb56a237c6d8f1f9a59cdb89072838e5ede881fe",
           "scannerLine": 2002,
           "literalLine": 2002,
-          "decoder": "HTML",
+          "decoder": "PLAIN",
           "role": "head",
           "occurrences": 1
         }
@@ -49,5 +49,5 @@
       ]
     }
   ],
-  "elapsedMs": 3149
+  "elapsedMs": 3249
 }
