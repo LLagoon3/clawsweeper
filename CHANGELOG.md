@@ -11,6 +11,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 - fix(dashboard): report bounded status diagnostics when the deployment smoke rejects the Bay contract, while preserving its failure gate.
 
+- Stop superseded review workers from repeatedly posting start comments, and reuse the same worker's active comment when queue checks temporarily fail.
+
 - Qualify the approved TypeSafe local URL-rejection fixture using its exact native identity and source line while retaining complete input scanning.
 
 - Keep POSIX synthetic GitHub CLI fixtures out of inherited Node coverage so interrupted fixture shutdown cannot corrupt the coverage report; real ClawSweeper subprocesses remain covered.
