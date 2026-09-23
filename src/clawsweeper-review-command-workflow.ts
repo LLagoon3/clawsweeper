@@ -19,6 +19,7 @@ import {
   isBulkFilerExemptRepositoryPermission as isVerifiedMaintainerRepositoryPermission,
   isMaintainerAuthorAssociation,
   labelNames,
+  verifiedMaintainerAuthorAssociation,
 } from "./clawsweeper-item-policy.js";
 import { mediaProofRuntimeHints, prepareMediaProofArtifacts } from "./clawsweeper-media-proof.js";
 import type {
@@ -33,6 +34,7 @@ import type {
   ReviewActionLedger,
 } from "./clawsweeper-types.js";
 import { PUBLIC_CODEX_MODEL } from "./codex-env.js";
+import { codexItemProfile } from "./codex-item-profile.js";
 import { UserFacingCommandError } from "./command.js";
 import { LOCAL_REVIEW_WEB_SEARCH_CONFIG } from "./commit-sweeper.js";
 import { isReviewedPrActivityCursor } from "./review-activity-cursor.js";
@@ -157,7 +159,12 @@ export function restoreVerifiedMaintainerPullRequestAuthorAssociation(
     return false;
   }
   if (!isVerifiedMaintainerRepositoryPermission(permission)) return false;
-  item.authorAssociation = "MEMBER";
+  item.authorAssociation = verifiedMaintainerAuthorAssociation({
+    kind: item.kind,
+    labels: item.labels,
+    authorAssociation: item.authorAssociation,
+    repositoryPermission: permission,
+  });
   return true;
 }
 
@@ -257,9 +264,7 @@ export function createReviewCommandWorkflow(dependencies: CreateReviewCommandWor
       batchSize,
       maxPages,
       model,
-      reasoningEffort,
       sandboxMode,
-      serviceTier,
       timeoutMs,
       expectedSourceRevision,
       allowClosed,
@@ -588,6 +593,7 @@ export function createReviewCommandWorkflow(dependencies: CreateReviewCommandWor
           restoreVerifiedMaintainerPullRequestAuthorAssociation(item, (author) =>
             bulkFilerRepositoryPermission(author, bulkFilerRepositoryPermissionCache),
           );
+        const itemCodexProfile = codexItemProfile(item.authorAssociation);
         activeReviewItem = item;
         let reviewItemFailed = false;
         const previousReviewMutationRunner = dependencies.activeReviewMutationRunner;
@@ -1489,9 +1495,9 @@ export function createReviewCommandWorkflow(dependencies: CreateReviewCommandWor
             model,
             openclawDir: reviewOpenclawDir,
             reviewTreeRoot: reviewTreesDir,
-            reasoningEffort,
+            reasoningEffort: itemCodexProfile.reasoningEffort,
             sandboxMode,
-            serviceTier,
+            serviceTier: itemCodexProfile.serviceTier,
             forcedLoginMethod,
             preserveCodexAuth: localOnly,
             timeoutMs,
@@ -1545,9 +1551,9 @@ export function createReviewCommandWorkflow(dependencies: CreateReviewCommandWor
         decision = verifyRegressionProvenance(decision, item, context, reviewOpenclawDir, git);
         const runtime = {
           model: PUBLIC_CODEX_MODEL,
-          reasoningEffort,
+          reasoningEffort: itemCodexProfile.reasoningEffort,
           sandboxMode,
-          serviceTier,
+          serviceTier: itemCodexProfile.serviceTier,
           ...prompt.telemetry,
           contextElapsedMs,
           codexElapsedMs,

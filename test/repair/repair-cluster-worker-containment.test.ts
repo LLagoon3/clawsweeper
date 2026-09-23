@@ -100,7 +100,7 @@ test("initial planning forwards the selected model like requeues", () => {
   assert.match(workflow.slice(reviewWorkerIndex), /--model "\$CLUSTER_WORKER_MODEL"/);
 });
 
-test("issue PR execution is pinned to sol xhigh without changing planning", () => {
+test("issue PR execution uses Sol with the ordinary item profile before author routing", () => {
   const executeJobIndex = workflow.indexOf("\n  execute:");
   const planningJob = workflow.slice(0, executeJobIndex);
   const executeJob = workflow.slice(executeJobIndex);
@@ -110,21 +110,18 @@ test("issue PR execution is pinned to sol xhigh without changing planning", () =
     planningJob,
     /CLAWSWEEPER_INTERNAL_MODEL: \$\{\{ vars\.CLAWSWEEPER_CODEX_AUTH_MODE != 'clawrouter' && secrets\.CLAWSWEEPER_MODEL \|\| '' \}\}/,
   );
+  assert.doesNotMatch(executeJob, /CLAWSWEEPER_CODEX_REASONING_EFFORT/);
   assert.match(
     executeJob,
-    /CLAWSWEEPER_CODEX_REASONING_EFFORT: \$\{\{ contains\(inputs\.job, '\/inbox\/issue-'\) && \(vars\.CLAWSWEEPER_FIX_PR_REASONING_EFFORT \|\| 'xhigh'\)/,
+    /CLAWSWEEPER_INTERNAL_MODEL: \$\{\{ vars\.CLAWSWEEPER_CODEX_AUTH_MODE != 'clawrouter' && \(contains\(inputs\.job, '\/inbox\/issue-'\) && \(vars\.CLAWSWEEPER_FIX_PR_MODEL \|\| 'gpt-6-sol'\) \|\| secrets\.CLAWSWEEPER_MODEL\) \|\| '' \}\}/,
   );
   assert.match(
     executeJob,
-    /CLAWSWEEPER_INTERNAL_MODEL: \$\{\{ vars\.CLAWSWEEPER_CODEX_AUTH_MODE != 'clawrouter' && \(contains\(inputs\.job, '\/inbox\/issue-'\) && \(vars\.CLAWSWEEPER_FIX_PR_MODEL \|\| 'gpt-5\.6-sol'\) \|\| secrets\.CLAWSWEEPER_MODEL\) \|\| '' \}\}/,
-  );
-  assert.match(
-    executeJob,
-    /CLAWSWEEPER_OPENCLAW_MODEL: \$\{\{ contains\(inputs\.job, '\/inbox\/issue-'\) && format\('openai\/\{0\}', vars\.CLAWSWEEPER_FIX_PR_MODEL \|\| 'gpt-5\.6-sol'\) \|\| secrets\.CLAWSWEEPER_OPENCLAW_MODEL \}\}/,
+    /CLAWSWEEPER_OPENCLAW_MODEL: \$\{\{ contains\(inputs\.job, '\/inbox\/issue-'\) && format\('openai\/\{0\}', vars\.CLAWSWEEPER_FIX_PR_MODEL \|\| 'gpt-6-sol'\) \|\| secrets\.CLAWSWEEPER_OPENCLAW_MODEL \}\}/,
   );
   assert.match(
     fs.readFileSync("src/repair/execute-fix-artifact.ts", "utf8"),
-    /repairCodexReasoningEffort\(\s*undefined,\s*\/\^jobs\\\/\[\^\/\]\+\\\/inbox\\\/issue-\//,
+    /canonicalItemAuthorAssociations\(job\.frontmatter, clusterPlan\)/,
   );
 });
 

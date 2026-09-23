@@ -87,7 +87,6 @@ fs.writeFileSync(process.argv[process.argv.indexOf('--output-last-message') + 1]
       workflow.assistGenerateCommand({
         item_number: "42",
         question: "Explain this change.",
-        codex_reasoning_effort: "medium",
         run_id: "123",
         run_attempt: "1",
         artifact: artifactPath,
@@ -98,10 +97,31 @@ fs.writeFileSync(process.argv[process.argv.indexOf('--output-last-message') + 1]
       assert.equal(existsSync(providerInput), false);
       assert.equal(existsSync(artifactPath), false);
     } else {
+      for (const retiredProfileArg of [
+        { codex_reasoning_effort: "high" },
+        { codex_service_tier: "fast" },
+      ]) {
+        assert.throws(
+          () =>
+            workflow.assistGenerateCommand({
+              item_number: "42",
+              question: "Explain this change.",
+              ...retiredProfileArg,
+              run_id: "123",
+              run_attempt: "1",
+              artifact: artifactPath,
+              work_dir: root,
+            }),
+          /--codex-reasoning-effort and --codex-service-tier are retired for assist/,
+        );
+      }
       run();
       assert.match(readFileSync(providerInput, "utf8"), /Explain this change\./);
       const args = JSON.parse(readFileSync(providerArgs, "utf8"));
-      assert.ok(args.includes('service_tier="fast"'));
+      assert.equal(
+        args.some((arg: string) => arg.startsWith("service_tier=")),
+        false,
+      );
       assert.ok(args.includes('model_reasoning_effort="medium"'));
       assert.equal(
         JSON.parse(readFileSync(artifactPath, "utf8")).output.answer,
@@ -320,12 +340,7 @@ test("assist workflow isolates Codex generation from the fresh write-token publi
   );
   assert.equal(workflow.match(/uses: actions\/checkout@v7/g)?.length, 4);
   assert.equal(workflow.match(/persist-credentials: false/g)?.length, 4);
-  assert.equal(
-    workflow.match(
-      /REASONING_EFFORT: \$\{\{ vars\.CLAWSWEEPER_CODEX_REASONING_EFFORT \|\| 'high' \}\}/g,
-    )?.length,
-    3,
-  );
+  assert.doesNotMatch(workflow, /REASONING_EFFORT|--codex-reasoning-effort/);
   assert.doesNotMatch(workflow, /inputs\.reasoning_effort|client_payload\.reasoning_effort/);
 
   assert.match(generation, /Create read-only GitHub App token/);
