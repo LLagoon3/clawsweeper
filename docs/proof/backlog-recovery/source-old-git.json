@@ -1,0 +1,25 @@
+{
+  "provider": "local-native-git-and-loopback-http",
+  "node": "v24.18.1",
+  "objects": 3,
+  "fetchObjects": [
+    3,
+    2
+  ],
+  "warmFetches": 0,
+  "scannerDownloads": 2,
+  "scannerConnectionRefusalRecovered": true,
+  "corruptScannerRejected": true,
+  "limits": "Synthetic local transport faults; no GitHub writes or production throughput claim.",
+  "crabbox": {
+    "provider": "aws",
+    "leaseId": "cbx_60711a84a0c5",
+    "runId": "run_d12c06776f33ae027a6d0c20556235e5",
+    "url": "https://crabbox.openclaw.ai/portal/runs/run_d12c06776f33ae027a6d0c20556235e5",
+    "image": "node:24-bookworm",
+    "gitVersion": "2.39.5",
+    "exitCode": 0,
+    "focusedTestsPassed": 18,
+    "sourceSha256": "2a09512714b3a890eaa3764dae3eb4652d8959edd8ef8726e33c665b0045597d"
+  }
+}
