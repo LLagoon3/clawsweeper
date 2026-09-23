@@ -140,16 +140,11 @@ export function localExactBootstrapReviewCommentBody(
   return renderReviewCommentFromReport(markdown, "none");
 }
 
-export function restoreVerifiedMaintainerPullRequestAuthorAssociation(
-  item: Pick<Item, "kind" | "author" | "authorAssociation" | "labels">,
+export function restoreVerifiedMaintainerAuthorAssociation(
+  item: Pick<Item, "author" | "authorAssociation">,
   repositoryPermission: (author: string) => string | null,
 ): boolean {
-  if (
-    item.kind !== "pull_request" ||
-    !item.author.trim() ||
-    isMaintainerAuthorAssociation(item.authorAssociation) ||
-    !item.labels.some((label) => label.trim().toLowerCase() === "maintainer")
-  ) {
+  if (!item.author.trim() || isMaintainerAuthorAssociation(item.authorAssociation)) {
     return false;
   }
   let permission: string | null;
@@ -160,8 +155,6 @@ export function restoreVerifiedMaintainerPullRequestAuthorAssociation(
   }
   if (!isVerifiedMaintainerRepositoryPermission(permission)) return false;
   item.authorAssociation = verifiedMaintainerAuthorAssociation({
-    kind: item.kind,
-    labels: item.labels,
     authorAssociation: item.authorAssociation,
     repositoryPermission: permission,
   });
@@ -588,12 +581,6 @@ export function createReviewCommandWorkflow(dependencies: CreateReviewCommandWor
           );
           return cachePreflightState === "passed";
         };
-        const restoredMaintainerAssociation =
-          !localOnly &&
-          restoreVerifiedMaintainerPullRequestAuthorAssociation(item, (author) =>
-            bulkFilerRepositoryPermission(author, bulkFilerRepositoryPermissionCache),
-          );
-        const itemCodexProfile = codexItemProfile(item.authorAssociation);
         activeReviewItem = item;
         let reviewItemFailed = false;
         const previousReviewMutationRunner = dependencies.activeReviewMutationRunner;
@@ -639,6 +626,12 @@ export function createReviewCommandWorkflow(dependencies: CreateReviewCommandWor
             continue;
           }
         }
+        const restoredMaintainerAssociation =
+          !localOnly &&
+          restoreVerifiedMaintainerAuthorAssociation(item, (author) =>
+            bulkFilerRepositoryPermission(author, bulkFilerRepositoryPermissionCache),
+          );
+        const itemCodexProfile = codexItemProfile(item.authorAssociation);
         const bulkFilerDetection =
           !localOnly && item.kind === "issue"
             ? detectBulkFiler({
