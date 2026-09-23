@@ -15,6 +15,8 @@ import {
 
 export type CodexSpawnInvocation = CommandInvocation;
 
+const gracefulTerminations = new WeakSet<ChildProcess>();
+
 export function codexProcessCommand(
   env: NodeJS.ProcessEnv = process.env,
   platform: NodeJS.Platform = process.platform,
@@ -74,6 +76,7 @@ export function terminateCodexProcessTree(
     return undefined;
   }
 
+  if (signal !== "SIGKILL") gracefulTerminations.add(child);
   signalPosixProcessGroup(child, signal);
   if (signal === "SIGKILL") return undefined;
   const timer = setTimeout(() => signalPosixProcessGroup(child, "SIGKILL"), forceAfterMs);
@@ -101,7 +104,7 @@ export function spawnCodex(
   },
 ): ChildProcessWithoutNullStreams {
   const invocation = codexSpawnInvocation(args, options.env, process.platform, options.cwd);
-  return spawn(invocation.command, invocation.args, {
+  const child = spawn(invocation.command, invocation.args, {
     cwd: options.cwd,
     env: options.env,
     stdio: ["pipe", "pipe", "pipe"],
@@ -109,6 +112,13 @@ export function spawnCodex(
     windowsHide: true,
     ...(invocation.windowsVerbatimArguments ? { windowsVerbatimArguments: true } : {}),
   });
+  if (process.platform !== "win32") {
+    // Natural exits must not wait for descendant-held pipes; requested stops retain their grace.
+    child.once("exit", () => {
+      if (!gracefulTerminations.has(child)) signalPosixProcessGroup(child, "SIGKILL");
+    });
+  }
+  return child;
 }
 
 function signalPosixProcessGroup(child: ChildProcess, signal: NodeJS.Signals): void {
