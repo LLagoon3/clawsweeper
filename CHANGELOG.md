@@ -9,6 +9,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 - Qualify three synthetic OpenClaw model-egress URI fixtures by exact native identities, complete source lines, and committed paths while preserving input scanning and refusal controls.
 
+- Bound pinned Codex source fetches at their shared setup owner, stopping native Git and transport descendants while preserving retry classification and Git low-speed settings. Thanks @SebTardif.
+
 - Stop POSIX Codex descendants when their leader exits naturally, including descendants holding output pipes, without turning clean exits into review timeouts. Thanks @SebTardif.
 
 - Reduce publication backlog churn with shared inline-comment reads, bounded source-fetch retries that reuse verified Git objects, transient scanner-download retries, page-bounded dead-letter membership reads, and two isolated preparation workers per batch.
