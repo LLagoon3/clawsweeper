@@ -7,6 +7,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ## 0.3.1 - Unreleased
 
+- Reduce retained-lifecycle Bay refresh CPU by skipping repeated sample sorting for older cards while preserving full-history validation, counts, and ordering.
+
 - Keep re-review acknowledgements owned by the durable queue so a delayed recovery router cannot overwrite a completed or failed status.
 
 - Qualify three synthetic OpenClaw model-egress URI fixtures by exact native identities, complete source lines, and committed paths while preserving input scanning and refusal controls.
