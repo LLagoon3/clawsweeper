@@ -7,6 +7,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ## 0.3.1 - Unreleased
 
+- Reuse the command acknowledgement as the active review status so exact re-reviews no longer post a second temporary comment.
+
 - Stop scheduled sweeps from repeatedly preparing an unchanged PR with an incompatible pinned Codex version, while preserving source-change recovery and explicit maintainer re-review.
 
 - Avoid migration-proof blockers for newly captured in-memory `statePath` routing while preserving existing path edits, file-read, persisted-format, and incomplete-storage checks.
