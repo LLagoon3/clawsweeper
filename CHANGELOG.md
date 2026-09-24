@@ -85,6 +85,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 - Qualify reviewed autoreview hardening URI fixtures at both canonical and mirrored source paths using exact native identities and complete source-line witnesses.
 
+- Qualify the observed autoreview proxy prefix only with both ordered committed source witnesses, preserving complete input scanning and changed-input refusal.
+
 - Avoid migration-proof blockers for plain source-file reads while retaining gates for persisted readers, storage writes, and schema changes.
 
 - Qualify the existing marketplace entries telemetry fixture using both exact source-line witnesses while preserving the refresh fixture’s separate approval.

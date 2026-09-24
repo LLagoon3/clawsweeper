@@ -525,7 +525,7 @@ publication, telemetry schema, or public action surface changes.
 
 ### Autoreview shared-prefix follow-up: observed-variant qualification
 
-- Status: proposed host qualification; representative native compatibility proof complete.
+- Status: proposed host qualification; native compatibility and synthetic boundary proof complete.
 - Owner: ClawSweeper maintainers.
 - Source: `src/agent-input-scan-fixtures.ts` and the existing complete-input scanner.
 - Source baseline: `4233d61c38cd30e6c2fdfbd8ac140f7fba2bcc9e`.
@@ -584,6 +584,54 @@ precedent above explains why an absent finding is not negative proof. The
 original hosted Raw and prompt were not retained. This representative offline
 proof runs no model, recovers no historical hosted input, and does not replace a
 later hosted review's own complete-input scan.
+
+#### Synthetic production-boundary trace
+
+The [boundary receipt](autoreview-shared-prefix/synthetic-boundary.json) directly
+exercises the new row through the unchanged built `runAgentProcess` entry point,
+complete Git staging, scanner-result parser, default classifier, and process
+runner. The [driver](run-proxy-boundary-proof.mjs) uses an explicitly synthetic
+scanner process and an inert `CODEX_BIN` that records invocation and consumes the
+complete prompt. It runs neither the official scanner nor a model/provider.
+Detector discovery and verification are therefore **not exercised** by this trace.
+
+Both cases use the same frozen target range, 124,462-byte prompt, and 57,818-byte
+schema as the native compatibility proof. The scanner stand-in checks canonical
+arguments and private staging modes, records every staged identity, and verifies
+that both cases stage identical bytes. It independently pins the prompt, schema,
+and two source blobs; production owns the remaining collection. It derives the
+56-byte finding in memory from the canonical staged blobs, requiring the expected
+digest and both ordered complete-line witnesses. No raw finding or witness is
+copied into the driver or receipt.
+
+| Synthetic case | Production result | Inert invocations |
+| --- | --- | ---: |
+| Exact reviewed Raw/RawV2 identity at both endpoint blobs | Classified notice for `7b8ee01b...`, with base/head attribution | 1 |
+| One byte changed in Raw; RawV2 and all source inputs unchanged | `findings` / `literal_not_reviewed`, before the consumer | 0 |
+
+Each case staged the same 12 files totaling 1,565,781 bytes. Scanner input and
+worker temporary state were removed; target HEAD, index, and source stayed
+unchanged. The driver removed its own scratch after both cases. This proves
+candidate admission and refusal at the model boundary, not a native before/after
+reproduction; the two native compatibility receipts above remain unchanged.
+
+The 17-module runtime and package manifest come from the qualified Linux build
+at source tree `0687c5b32a54e9493dfc706aebce718fde545620`, with runtime source
+matching commit `e4f02ecdd2aa90acb8fe39fcf818a6913ca11738`. The build used Node
+24.21.0 and pnpm 12.4.1; the trace ran on Darwin arm64 with Node 26.7.0. All module
+hashes, the build-manifest identity, driver identity, complete staged manifests,
+actual classification notice, refusal diagnostic, and cleanup assertions are in
+the receipt. Its `artifacts` object supplies the input manifest fields below.
+
+```bash
+node docs/proof/agent-input-scan-context/run-proxy-boundary-proof.mjs \
+  /path/to/qualified-host \
+  /path/to/agent-skills-at-head \
+  /path/to/representative-review-prompt.txt \
+  /path/to/review-schema.json \
+  /path/to/qualified-artifact-manifest.json \
+  /path/to/synthetic-boundary.json
+```
 
 Release-note context: qualify the existing autoreview proxy-rejection prefix
 only with both ordered source witnesses, preserving complete input scanning.
