@@ -293,6 +293,7 @@ type ExactReviewParkedReason =
   | "dead_letter_capacity"
   | "dispatch_rejected"
   | "review_retry_exhausted"
+  | "source_incompatible"
   | "direct_publication";
 type ExactReviewLifecycleProjectionIdentity = {
   canonicalTargetKey: string;
@@ -730,7 +731,7 @@ type ExactReviewScheduledDisposition =
       deduped: true;
       item_key: string;
       dedupe_scope: "scheduled_queue_item";
-      dedupe_reason: "item_already_pending_or_active";
+      dedupe_reason: "item_already_pending_or_active" | "source_incompatible";
     }
   | {
       ok: true;
@@ -2138,11 +2139,15 @@ export class ExactReviewQueue {
             deduped: true,
             item_key: key,
             dedupe_scope: "scheduled_queue_item",
-            dedupe_reason: "item_already_pending_or_active",
+            dedupe_reason:
+              current.parkedReason === "source_incompatible"
+                ? "source_incompatible"
+                : "item_already_pending_or_active",
           };
           return {
             deduped: true as const,
             scheduled: true as const,
+            scheduledDedupeReason: disposition.dedupe_reason,
             key,
             state,
             scheduledDispositionJson: this.recordScheduledDispositionSync(
@@ -2570,7 +2575,7 @@ export class ExactReviewQueue {
             ...("scheduled" in accepted && accepted.scheduled
               ? {
                   dedupe_scope: "scheduled_queue_item",
-                  dedupe_reason: "item_already_pending_or_active",
+                  dedupe_reason: accepted.scheduledDedupeReason,
                 }
               : {}),
             ...("staleSource" in accepted && accepted.staleSource ? { stale_source: true } : {}),
@@ -3290,6 +3295,10 @@ export class ExactReviewQueue {
         item.revision > leaseRevision
           ? false
           : completionResult.requeued;
+      // A pinned-source refusal remains discoverable for source recovery, but
+      // retaining its queue row must not turn its terminal failure into a retry.
+      const parkedForRetry =
+        Boolean(completionResult.parked) && item.parkedReason !== "source_incompatible";
       const lifecycleIdentity: ExactReviewLifecycleProjectionIdentity = {
         canonicalTargetKey: `${lifecycleItem.decision.targetRepo}#${lifecycleItem.decision.itemNumber}`,
         fenceKey: lifecycleItem.key,
@@ -3307,7 +3316,7 @@ export class ExactReviewQueue {
         outcome,
         publicationCompletion,
         requeued: lifecycleRequeued,
-        parked: Boolean(completionResult.parked),
+        parked: parkedForRetry,
         deadLetter: Boolean(completionResult.deadLetter),
         lifecycleTerminal,
       });
@@ -3416,7 +3425,7 @@ export class ExactReviewQueue {
           outcome,
           publicationCompletion,
           requeued: lifecycleRequeued,
-          parked: Boolean(completionResult.parked),
+          parked: parkedForRetry,
           deadLetter: Boolean(completionResult.deadLetter),
           lifecycleTerminal,
           now,
@@ -5770,6 +5779,15 @@ export class ExactReviewQueue {
         }
         supersessionAudits.push(audit);
         continue;
+      }
+      if (
+        item.state === "pending" &&
+        candidate.state.state === "open" &&
+        candidate.state.sourceIdentity
+      ) {
+        // Scheduled intake has no PR source tuple. Bind the live read before
+        // taking the lease snapshot so completion and recovery share one identity.
+        item.decision = { ...item.decision, ...candidate.state.sourceIdentity };
       }
       if (candidate.state.state === "unavailable") {
         if (item.state === "parked") {
@@ -15610,6 +15628,25 @@ function finishExactReviewQueueItem(
     (retryingFailure && retryPolicyChanged) ||
     requeueLatest;
   if (!requeued) {
+    if (
+      reviewFailureReason === "source_incompatible" &&
+      item.decision.itemKind === "pull_request" &&
+      /^[0-9a-f]{40}$/.test(item.decision.sourceHeadSha ?? "") &&
+      !exactReviewQueueHasCommandContext(item)
+    ) {
+      // The missing/invalid Codex pin belongs to this immutable PR head. Keep
+      // the existing queue slot so scheduled intake cannot recreate it; fresh
+      // source reconciliation and explicit commands retain their recovery paths.
+      clearExactReviewLease(item);
+      item.state = "parked";
+      item.parkedReason = "source_incompatible";
+      item.parkedRecoveryAt = undefined;
+      item.parkedTerminalCheckedAt = now;
+      item.backoffReason = undefined;
+      item.firstFailureAt ??= now;
+      item.updatedAt = now;
+      return { requeued: false, parked: true };
+    }
     delete state.items[item.key];
     return { requeued: false, parked: false };
   }
@@ -16944,14 +16981,15 @@ function exactReviewScheduledDispositionFromJson(
       typeof body.item_key === "string" &&
       /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+#[1-9]\d*$/.test(body.item_key) &&
       body.dedupe_scope === "scheduled_queue_item" &&
-      body.dedupe_reason === "item_already_pending_or_active"
+      (body.dedupe_reason === "item_already_pending_or_active" ||
+        body.dedupe_reason === "source_incompatible")
     ) {
       disposition = {
         ok: true,
         deduped: true,
         item_key: body.item_key,
         dedupe_scope: "scheduled_queue_item",
-        dedupe_reason: "item_already_pending_or_active",
+        dedupe_reason: body.dedupe_reason,
       };
     } else if (
       body.ok === true &&
@@ -17534,7 +17572,14 @@ async function exactReviewTargetItemState(
   try {
     const isPullRequest = decision.itemKind === "pull_request";
     const queuedHeadSha = String(decision.sourceHeadSha || "").toLowerCase();
-    const readPullHead = isPullRequest && /^[0-9a-f]{40}$/.test(queuedHeadSha);
+    const bindScheduledSource =
+      isPullRequest &&
+      !queuedHeadSha &&
+      Boolean(exactReviewScheduledLane(decision)) &&
+      !decision.publication &&
+      !exactReviewDecisionHasCommandContext(decision);
+    const readPullHead =
+      isPullRequest && (/^[0-9a-f]{40}$/.test(queuedHeadSha) || bindScheduledSource);
     const item = await githubTokenJson({
       env,
       token,
@@ -17551,6 +17596,33 @@ async function exactReviewTargetItemState(
         .toLowerCase();
       if (!/^[0-9a-f]{40}$/.test(headSha)) {
         throw new Error("live pull request response missing head SHA");
+      }
+      if (bindScheduledSource) {
+        const baseSha = String(objectValue(item.base).sha || "").toLowerCase();
+        const material = exactReviewSourceRevisionMaterial(item);
+        const updatedAt = String(item.updated_at || "");
+        if (
+          !/^[0-9a-f]{40}$/.test(baseSha) ||
+          typeof item.draft !== "boolean" ||
+          !material ||
+          !Number.isFinite(Date.parse(updatedAt))
+        ) {
+          throw new Error("live scheduled pull request source identity is incomplete");
+        }
+        return {
+          state: "open",
+          headSha,
+          sourceIdentity: {
+            sourceHeadSha: headSha,
+            sourceHeadVerified: true,
+            sourceBaseSha: baseSha,
+            sourceIsDraft: item.draft,
+            sourceUpdatedAt: updatedAt,
+            sourceContentRevision: await sha256Hex(
+              new TextEncoder().encode(JSON.stringify(material)),
+            ),
+          },
+        };
       }
       return { state: "open", headSha };
     }
