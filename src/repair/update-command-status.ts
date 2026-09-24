@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { setTimeout as sleep } from "node:timers/promises";
+import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 import { ghJsonWithRetry, ghPagedWithRetry, ghText } from "./github-cli.js";
 import { isLockedConversationCommentError } from "../github-retry.js";
@@ -26,13 +27,16 @@ import {
   commandAckMarkerFromBody,
   commandStatusMarkerFromBody,
   compareCommentsByCreatedAt,
-  isPrunableCommandAckDuplicate,
   legacyCommandCommentId,
   selectCommandAckKeeper,
   statusMarkerDiffersFromRequested,
 } from "./command-ack-convergence.js";
 
 const PROGRESS_END = "<!-- clawsweeper-command-progress:end -->";
+// The 120-minute job reserves at most 56 minutes for review work. The remaining
+// 64 minutes cover setup before the reservation and finalization afterward. The
+// workflow refreshes this lease when reservation begins.
+const COMMAND_REVIEW_LEASE_MS = 64 * 60_000;
 
 type Options = {
   repo: string;
@@ -45,6 +49,8 @@ type Options = {
   runUrl: string;
   waitMs: number;
   requireMutation: boolean;
+  refuseTerminalState: boolean;
+  requireQueueAuthorityFence: boolean;
   lockedConversationTerminalSkip: boolean;
   verifyTerminalStatusReceipt: boolean;
   requireTerminalFinalizationFence: boolean;
@@ -55,7 +61,9 @@ type CommandStatusUpdateOutcome =
   | "unchanged"
   | "skipped"
   | "locked_conversation"
-  | "missing_status_comment";
+  | "missing_status_comment"
+  | "terminal_state"
+  | "queue_superseded";
 
 type TerminalStatusReceipt = {
   commandCommentId: number;
@@ -64,6 +72,7 @@ type TerminalStatusReceipt = {
 
 type CommandStatusUpdateResult = {
   outcome: CommandStatusUpdateOutcome;
+  statusCommentId?: number;
   terminalStatusReceipt?: TerminalStatusReceipt;
   terminalStatusCompletedAt?: string;
 };
@@ -88,9 +97,17 @@ async function updateCommandStatus(options: Options): Promise<CommandStatusUpdat
   }
   validateRepo(options.repo);
   validateItemNumber(options.itemNumber);
+  if (options.requireQueueAuthorityFence && !(await exactReviewQueueAuthorityFence(process.env))) {
+    recordCommandProgress(lifecycle, {
+      state: "superseded",
+      status: "skipped",
+      mutation: false,
+    });
+    return { outcome: "queue_superseded" };
+  }
   let comment: LooseRecord | null;
   try {
-    comment = await findCommandStatusComment(options, lifecycle);
+    comment = await findCommandStatusComment(options);
   } catch (error) {
     if (
       options.requireTerminalFinalizationFence &&
@@ -132,6 +149,15 @@ async function updateCommandStatus(options: Options): Promise<CommandStatusUpdat
       throw new Error("command status mutation required but no comment was found");
     return { outcome: "skipped" };
   }
+  if (options.requireQueueAuthorityFence && !(await exactReviewQueueAuthorityFence(process.env))) {
+    recordCommandProgress(lifecycle, {
+      state: "superseded",
+      status: "skipped",
+      mutation: false,
+    });
+    return { outcome: "queue_superseded" };
+  }
+  const statusCommentId = Number(comment.id);
   const terminalStatusReceipt = verifiedTerminalStatusReceipt(comment, options);
   if (terminalStatusReceipt) {
     recordCommandProgress(lifecycle, {
@@ -140,19 +166,60 @@ async function updateCommandStatus(options: Options): Promise<CommandStatusUpdat
       mutation: false,
     });
     return {
-      outcome: "unchanged",
+      outcome: options.refuseTerminalState ? "terminal_state" : "unchanged",
+      statusCommentId,
       terminalStatusReceipt,
       terminalStatusCompletedAt: verifiedTerminalStatusCompletedAt(comment),
     };
   }
-  const body = mergeCommandProgressSection(comment.body, options);
+  if (options.refuseTerminalState) {
+    const currentProgress =
+      /<!--\s*clawsweeper-command-progress:start\s*-->([\s\S]*?)<!--\s*clawsweeper-command-progress:end\s*-->/i.exec(
+        comment.body,
+      )?.[1] ?? "";
+    const currentState = /^- State:\s*(.+)$/im.exec(currentProgress)?.[1]?.trim();
+    if (
+      currentState &&
+      !new Set(["Queued", "Waiting", "Review in progress", "Failed", "Interrupted"]).has(
+        currentState,
+      )
+    ) {
+      recordCommandProgress(lifecycle, {
+        state: currentState,
+        status: "unchanged",
+        mutation: false,
+      });
+      return { outcome: "terminal_state", statusCommentId };
+    }
+  }
+  const queueLease = (() => {
+    if (!options.requireQueueAuthorityFence || options.state !== "Review in progress") {
+      return undefined;
+    }
+    const startedAtMs = Date.now();
+    return {
+      itemNumber: Number(options.itemNumber),
+      headSha: String(
+        process.env.EXACT_REVIEW_SOURCE_HEAD_SHA || process.env.EXACT_REVIEW_SOURCE_REVISION || "",
+      )
+        .trim()
+        .toLowerCase(),
+      owner: `github-run-${process.env.GITHUB_RUN_ID}-${process.env.GITHUB_RUN_ATTEMPT}`,
+      startedAt: new Date(startedAtMs).toISOString(),
+      expiresAt: new Date(startedAtMs + COMMAND_REVIEW_LEASE_MS).toISOString(),
+    };
+  })();
+  const body = mergeCommandProgressSection(comment.body, {
+    ...options,
+    ...(queueLease ? { queueLease } : {}),
+  });
   if (body === comment.body) {
     recordCommandProgress(lifecycle, {
       state: options.state,
       status: "unchanged",
       mutation: false,
     });
-    return { outcome: "unchanged" };
+    return { outcome: "unchanged", statusCommentId };
   }
   const payload = writePayload(repoRoot(), `command-status-progress-${comment.id}`, { body });
   let mutationResponse: string;
@@ -192,6 +259,7 @@ async function updateCommandStatus(options: Options): Promise<CommandStatusUpdat
   const verifiedReceipt = verifiedTerminalStatusReceipt({ ...comment, body }, options);
   return {
     outcome: "completed",
+    statusCommentId,
     ...(verifiedReceipt
       ? {
           terminalStatusReceipt: verifiedReceipt,
@@ -208,9 +276,11 @@ export async function runCommandStatusUpdate(options: Options) {
   let outcome: CommandStatusUpdateOutcome | null = null;
   let terminalStatusReceipt: TerminalStatusReceipt | undefined;
   let terminalStatusCompletedAt: string | undefined;
+  let statusCommentId: number | undefined;
   try {
     const result = await updateCommandStatus(options);
     outcome = result.outcome;
+    statusCommentId = result.statusCommentId;
     terminalStatusReceipt = result.terminalStatusReceipt;
     terminalStatusCompletedAt = result.terminalStatusCompletedAt;
   } catch (error) {
@@ -238,6 +308,15 @@ export async function runCommandStatusUpdate(options: Options) {
   }
   if (!commandError && outcome === "missing_status_comment" && process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT, "missing_status_comment=true\n");
+  }
+  if (!commandError && outcome === "terminal_state" && process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, "terminal_state=true\n");
+  }
+  if (!commandError && outcome === "queue_superseded" && process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, "queue_superseded=true\n");
+  }
+  if (!commandError && statusCommentId && process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `status_comment_id=${statusCommentId}\n`);
   }
   if (!commandError && terminalStatusReceipt && process.env.GITHUB_OUTPUT) {
     appendFileSync(
@@ -294,10 +373,7 @@ function commandStatusLifecycle(options: Options): CommandLifecycleInput {
   };
 }
 
-async function findCommandStatusComment(
-  options: Options,
-  lifecycle: CommandLifecycleInput,
-): Promise<LooseRecord | null> {
+async function findCommandStatusComment(options: Options): Promise<LooseRecord | null> {
   const deadline = Date.now() + Math.max(0, options.waitMs);
   while (true) {
     const exact = fetchExactStatusComment(options);
@@ -326,9 +402,6 @@ async function findCommandStatusComment(
         (!exact || statusMarkerDiffersFromRequested(exact.body, options.marker))
       ) {
         options.statusCommentId = Number(match.id);
-      }
-      if (!options.requireTerminalFinalizationFence) {
-        pruneDuplicateCommandAckComments({ comments, keep: match, options, lifecycle });
       }
       return match;
     }
@@ -401,40 +474,6 @@ function matchingAckCommentForStatus(
   return selectCommandAckKeeper(matching);
 }
 
-function pruneDuplicateCommandAckComments({
-  comments,
-  keep,
-  options,
-  lifecycle,
-}: {
-  comments: LooseRecord[];
-  keep: LooseRecord;
-  options: Pick<Options, "marker" | "repo" | "trustedBots">;
-  lifecycle: CommandLifecycleInput;
-}) {
-  const marker = commandAckMarkerFromBody(keep.body);
-  if (!marker) return;
-  const matching = commandAckComments(comments, marker, options.trustedBots);
-  const keepId = Number(keep.id ?? 0) || 0;
-  for (const comment of matching) {
-    const id = Number(comment.id ?? 0) || 0;
-    if (id <= 0 || id === keepId) continue;
-    if (!isPrunableCommandAckDuplicate(comment, options.marker)) continue;
-    try {
-      runCommandLifecycleMutation(lifecycle, {
-        kind: "ack_comment_delete",
-        identity: { repository: options.repo, commentId: id },
-        component: "command_status",
-        operation: () =>
-          ghText(["api", `repos/${options.repo}/issues/comments/${id}`, "--method", "DELETE"]),
-        knownNoMutation: (error) => /\b404\b|Not Found/i.test(String(error)),
-      });
-    } catch (error) {
-      if (!/\b404\b|Not Found/i.test(String(error))) throw error;
-    }
-  }
-}
-
 function commandAckComments(comments: LooseRecord[], marker: string, trustedBots: Set<string>) {
   return comments
     .filter(
@@ -450,16 +489,21 @@ export function mergeCommandProgressSection(
   body: string,
   options: Pick<Options, "state" | "detail" | "runUrl"> & {
     verifyTerminalStatusReceipt?: boolean;
+    queueLease?: {
+      itemNumber: number;
+      headSha: string;
+      owner: string;
+      startedAt: string;
+      expiresAt: string;
+    };
   },
 ) {
-  const sourceBody = options.verifyTerminalStatusReceipt
-    ? body
-        .replace(
-          /\n*<!--\s*clawsweeper-review-status:started\b[^>]*-->\s*<!--\s*clawsweeper-command-review-lease\s+item=[1-9]\d*\s*-->\s*$/i,
-          "",
-        )
-        .trimEnd()
-    : body;
+  const sourceBody = body
+    .replace(
+      /\n*<!--\s*clawsweeper-review-status:started\b[^>]*-->\s*<!--\s*clawsweeper-command-review-lease\s+item=[1-9]\d*\s*-->\s*$/i,
+      "",
+    )
+    .trimEnd();
   const section = renderCommandProgressSection(options);
   const start = sourceBody.indexOf(PROGRESS_START);
   const end = sourceBody.indexOf(PROGRESS_END);
@@ -469,7 +513,17 @@ export function mergeCommandProgressSection(
   } else {
     merged = `${sourceBody.trimEnd()}\n\n${section}`;
   }
-  return merged;
+  if (!options.queueLease) return merged;
+  const lease = options.queueLease;
+  if (
+    !Number.isInteger(lease.itemNumber) ||
+    lease.itemNumber < 1 ||
+    !/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(lease.headSha) ||
+    !/^[A-Za-z0-9._-]{1,200}$/.test(lease.owner)
+  ) {
+    throw new Error("invalid queue-owned command review lease");
+  }
+  return `${merged.trimEnd()}\n\n<!-- clawsweeper-review-status:started item=${lease.itemNumber} sha=${lease.headSha} started_at=${lease.startedAt} lease_expires_at=${lease.expiresAt} owner=${lease.owner} v=1 -->\n<!-- clawsweeper-command-review-lease item=${lease.itemNumber} -->`;
 }
 
 export function verifiedTerminalStatusReceipt(
@@ -627,6 +681,13 @@ export function parseOptions(argv: string[]): Options {
     waitMs: Number.parseInt(args["wait-ms"] ?? process.env.COMMAND_STATUS_WAIT_MS ?? "0", 10) || 0,
     requireMutation:
       (args["require-mutation"] ?? process.env.COMMAND_STATUS_REQUIRE_MUTATION ?? "") === "true",
+    refuseTerminalState:
+      (args["refuse-terminal-state"] ?? process.env.COMMAND_STATUS_REFUSE_TERMINAL_STATE ?? "") ===
+      "true",
+    requireQueueAuthorityFence:
+      (args["require-queue-authority-fence"] ??
+        process.env.COMMAND_STATUS_REQUIRE_QUEUE_AUTHORITY_FENCE ??
+        "") === "true",
     lockedConversationTerminalSkip:
       (args["locked-conversation-terminal-skip"] ??
         process.env.COMMAND_STATUS_LOCKED_CONVERSATION_TERMINAL_SKIP ??
@@ -640,6 +701,77 @@ export function parseOptions(argv: string[]): Options {
         process.env.COMMAND_STATUS_VERIFY_TERMINAL_RECEIPT ??
         "") === "true",
   };
+}
+
+export async function exactReviewQueueAuthorityFence(
+  env: NodeJS.ProcessEnv = process.env,
+  execute: (
+    file: string,
+    args: string[],
+    options: { encoding: "utf8"; maxBuffer: number },
+  ) => string = (file, args, options) => execFileSync(file, args, options),
+): Promise<boolean> {
+  const origin = new URL(env.QUEUE_URL || "");
+  if (
+    origin.username ||
+    origin.password ||
+    (origin.protocol !== "https:" &&
+      !(
+        origin.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname)
+      ))
+  ) {
+    throw new Error("invalid exact-review queue fence origin");
+  }
+  const leaseRevision = Number(env.EXACT_REVIEW_LEASE_REVISION);
+  const claimGeneration = Number(env.EXACT_REVIEW_CLAIM_GENERATION);
+  const runAttempt = Number(env.GITHUB_RUN_ATTEMPT);
+  const runId = env.GITHUB_RUN_ID || "";
+  const sourceHeadSha = String(env.EXACT_REVIEW_SOURCE_HEAD_SHA || "")
+    .trim()
+    .toLowerCase();
+  if (
+    !env.EXACT_REVIEW_ITEM_KEY ||
+    !env.EXACT_REVIEW_LEASE_ID ||
+    !/^[1-9][0-9]*$/.test(runId) ||
+    ![leaseRevision, claimGeneration, runAttempt].every(
+      (value) => Number.isSafeInteger(value) && value > 0,
+    ) ||
+    (sourceHeadSha && !/^[0-9a-f]{40}$/.test(sourceHeadSha))
+  ) {
+    throw new Error("missing exact-review queue fence tuple");
+  }
+  const payload = writePayload(repoRoot(), `command-status-fence-${runId}-${runAttempt}`, {
+    item_key: env.EXACT_REVIEW_ITEM_KEY,
+    lease_id: env.EXACT_REVIEW_LEASE_ID,
+    lease_revision: leaseRevision,
+    claim_generation: claimGeneration,
+    run_id: runId,
+    run_attempt: runAttempt,
+    ...(sourceHeadSha ? { source_head_sha: sourceHeadSha } : {}),
+    phase: "status",
+  });
+  const output = execute(
+    "bash",
+    [
+      "-c",
+      'source "$1"; control_plane_curl --silent --show-error --connect-timeout 5 --max-time 20 --write-out "\\n%{http_code}" --request POST --header "content-type: application/json" --data-binary "@$2" "$3"',
+      "_",
+      `${repoRoot()}/scripts/control-plane-curl.sh`,
+      payload,
+      new URL("/internal/exact-review/heartbeat", origin).toString(),
+    ],
+    { encoding: "utf8", maxBuffer: 1024 * 1024 },
+  );
+  const separator = output.lastIndexOf("\n");
+  const status = Number(output.slice(separator + 1).trim());
+  const result = JSON.parse(output.slice(0, separator) || "{}") as Record<string, JsonValue>;
+  if (status === 409 && ["lease_superseded", "lease_not_active"].includes(String(result.error))) {
+    return false;
+  }
+  if (status < 200 || status >= 300 || result.ok !== true) {
+    throw new Error(`exact-review queue fence failed (HTTP ${status})`);
+  }
+  return true;
 }
 
 function validateRepo(repo: string) {

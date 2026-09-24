@@ -4,6 +4,7 @@ import { classifyScheduledReviewNoop } from "../scheduled-review-noop.js";
 import { ghRetryKind } from "../github-retry.js";
 import { ghErrorText, ghTextWithRetry } from "./github-cli.js";
 import { deferAutomaticEndorReview } from "./endor-automerge-intake.js";
+import { issueSourceRevisionSha256 } from "./issue-source-guard.js";
 
 type Output = (values: Record<string, string>) => void;
 
@@ -104,6 +105,15 @@ export function exactReviewAdmission(output: Output): void {
   const open = issue.state === "open";
   const locked = issue.locked === true;
   const pullRequest = Boolean(issue.pull_request);
+  const hasCommandContext = Boolean(decision.commandStatusMarker || decision.statusCommentId);
+  let issueComments: unknown[] | undefined;
+  if (open && !locked && !pullRequest && hasCommandContext) {
+    const pages: unknown[] = JSON.parse(
+      read(`issues/${number}/comments?per_page=100`, "--paginate", "--slurp"),
+    );
+    issueComments = pages.flat();
+    output({ source_revision: issueSourceRevisionSha256(issue, issueComments) });
+  }
   output({ item_kind: pullRequest ? "pull_request" : "issue" });
   if (open && !locked && deferAutomaticEndorReview(repo, issue, decision)) {
     // Reuse the early policy no-op path: no write token, checkout or review lease.
@@ -142,10 +152,13 @@ export function exactReviewAdmission(output: Output): void {
   if (open && !locked && decision.sourceAction === "scheduled_hot_intake") {
     let comments: unknown[] | undefined;
     try {
-      const pages: unknown[] = JSON.parse(
-        read(`issues/${number}/comments?per_page=100`, "--paginate", "--slurp"),
-      );
-      comments = pages.flat();
+      if (issueComments) comments = issueComments;
+      else {
+        const pages: unknown[] = JSON.parse(
+          read(`issues/${number}/comments?per_page=100`, "--paginate", "--slurp"),
+        );
+        comments = pages.flat();
+      }
     } catch (error) {
       console.error(
         "::warning::Unable to read comments for scheduled no-op classification; preserving normal review admission.",

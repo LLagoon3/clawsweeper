@@ -816,6 +816,91 @@ jobs:
           permission-pull-requests: write
           permission-statuses: read
 
+      - name: Fence re-review command status
+        id: command-status-fence
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.target.outputs.has_command_context == 'true' && steps.target-write-token.outputs.token != '' }}
+        env:
+          QUEUE_URL: ${{ vars.CLAWSWEEPER_EXACT_REVIEW_QUEUE_URL || 'https://clawsweeper.openclaw.ai' }}
+          EXACT_REVIEW_ITEM_KEY: ${{ steps.claim-exact-review-queue.outputs.item_key }}
+          EXACT_REVIEW_LEASE_ID: ${{ steps.claim-exact-review-queue.outputs.lease_id }}
+          EXACT_REVIEW_LEASE_REVISION: ${{ steps.claim-exact-review-queue.outputs.lease_revision }}
+          EXACT_REVIEW_CLAIM_GENERATION: ${{ steps.claim-exact-review-queue.outputs.claim_generation }}
+          EXACT_REVIEW_SOURCE_HEAD_SHA: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).sourceHeadSha || '' }}
+          EXACT_REVIEW_SOURCE_REVISION: ${{ steps.live-item.outputs.source_revision || '' }}
+        run: |
+          set -euo pipefail
+          source scripts/control-plane-curl.sh
+          echo "authorized=false" >> "$GITHUB_OUTPUT"
+          echo "superseded=false" >> "$GITHUB_OUTPUT"
+          payload="$(node -e '
+            const leaseRevision = Number(process.env.EXACT_REVIEW_LEASE_REVISION);
+            const claimGeneration = Number(process.env.EXACT_REVIEW_CLAIM_GENERATION);
+            const runAttempt = Number(process.env.GITHUB_RUN_ATTEMPT);
+            const sourceHeadSha = String(process.env.EXACT_REVIEW_SOURCE_HEAD_SHA || "").trim().toLowerCase();
+            if (!process.env.EXACT_REVIEW_ITEM_KEY || !process.env.EXACT_REVIEW_LEASE_ID) process.exit(1);
+            if (!Number.isInteger(leaseRevision) || leaseRevision < 1) process.exit(1);
+            if (!Number.isInteger(claimGeneration) || claimGeneration < 1) process.exit(1);
+            if (!Number.isInteger(runAttempt) || runAttempt < 1) process.exit(1);
+            if (sourceHeadSha && !/^[0-9a-f]{40}$/.test(sourceHeadSha)) process.exit(1);
+            process.stdout.write(JSON.stringify({
+              item_key: process.env.EXACT_REVIEW_ITEM_KEY,
+              lease_id: process.env.EXACT_REVIEW_LEASE_ID,
+              lease_revision: leaseRevision,
+              claim_generation: claimGeneration,
+              run_id: process.env.GITHUB_RUN_ID,
+              run_attempt: runAttempt,
+              ...(sourceHeadSha ? { source_head_sha: sourceHeadSha } : {}),
+              phase: "status",
+            }));
+          ')"
+          response="$(mktemp)"
+          trap 'rm -f "$response"' EXIT
+          status="$(control_plane_curl --silent --show-error --connect-timeout 5 --max-time 20 \
+            --output "$response" --write-out '%{http_code}' --request POST \
+            --header "content-type: application/json" --data-binary "$payload" \
+            "${QUEUE_URL%/}/internal/exact-review/heartbeat")" || status=""
+          if [ "$status" = "200" ]; then
+            echo "authorized=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$status" = "409" ] && jq -e '.error == "lease_superseded" or .error == "lease_not_active"' "$response" >/dev/null; then
+            echo "superseded=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping command status because the exact-review queue claim was superseded."
+            exit 0
+          fi
+          echo "Unable to fence command status against the active exact-review queue claim." >&2
+          exit 1
+
+      - name: Mark re-review command in progress
+        id: mark-re-review-command-in-progress
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.target.outputs.has_command_context == 'true' && steps.command-status-fence.outputs.authorized == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
+          TARGET_REPO: ${{ steps.target.outputs.target_repo }}
+          ITEM_NUMBER: ${{ steps.target.outputs.item_number }}
+          COMMAND_STATUS_MARKER: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).commandStatusMarker || '' }}
+          STATUS_COMMENT_ID: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).statusCommentId || '' }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          QUEUE_URL: ${{ vars.CLAWSWEEPER_EXACT_REVIEW_QUEUE_URL || 'https://clawsweeper.openclaw.ai' }}
+          EXACT_REVIEW_ITEM_KEY: ${{ steps.claim-exact-review-queue.outputs.item_key }}
+          EXACT_REVIEW_LEASE_ID: ${{ steps.claim-exact-review-queue.outputs.lease_id }}
+          EXACT_REVIEW_LEASE_REVISION: ${{ steps.claim-exact-review-queue.outputs.lease_revision }}
+          EXACT_REVIEW_CLAIM_GENERATION: ${{ steps.claim-exact-review-queue.outputs.claim_generation }}
+          EXACT_REVIEW_SOURCE_HEAD_SHA: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).sourceHeadSha || '' }}
+          EXACT_REVIEW_SOURCE_REVISION: ${{ steps.live-item.outputs.source_revision || '' }}
+        run: |
+          pnpm run repair:update-command-status -- \
+            --repo "$TARGET_REPO" \
+            --item-number "$ITEM_NUMBER" \
+            --marker "$COMMAND_STATUS_MARKER" \
+            --status-comment-id "$STATUS_COMMENT_ID" \
+            --state "Review in progress" \
+            --detail "The exact-review queue leased this run; Codex is reviewing the item." \
+            --run-url "$RUN_URL" \
+            --refuse-terminal-state \
+            --require-queue-authority-fence \
+            --wait-ms 120000
+
       - name: Resolve automatic review status comment
         id: automatic-review-status
         if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.target.outputs.has_command_context != 'true' && steps.live-item.outputs.oversized != 'true' && fromJSON(steps.claim-exact-review-queue.outputs.decision).itemKind == 'pull_request' && steps.target-write-token.outputs.token != '' }}
@@ -862,7 +947,7 @@ jobs:
           fi
 
       - name: React to target item review start
-        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' }}
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && (steps.command-status-fence.outcome == 'skipped' || steps.command-status-fence.outputs.authorized == 'true') }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
@@ -891,7 +976,7 @@ jobs:
           react "eyes"
 
       - uses: actions/cache@v6
-        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' }}
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && (steps.command-status-fence.outcome == 'skipped' || steps.command-status-fence.outputs.authorized == 'true') }}
         with:
           path: ${{ steps.target.outputs.target_checkout_dir }}-cache.git
           key: ${{ steps.target.outputs.target_repo_name }}-event-git-${{ runner.os }}-${{ github.run_id }}
@@ -900,7 +985,7 @@ jobs:
             ${{ steps.target.outputs.target_repo_name }}-git-${{ runner.os }}-
 
       - name: Check out target repository
-        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' }}
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && (steps.command-status-fence.outcome == 'skipped' || steps.command-status-fence.outputs.authorized == 'true') }}
         run: |
           set -euo pipefail
           url="https://github.com/${{ steps.target.outputs.target_repo }}.git"
@@ -933,34 +1018,13 @@ jobs:
           git -C "$checkout_dir" rev-parse --short HEAD
 
       - uses: ./.github/actions/setup-openclaw-codex-source
-        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' }}
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && (steps.command-status-fence.outcome == 'skipped' || steps.command-status-fence.outputs.authorized == 'true') }}
         with:
           target-repo: ${{ steps.target.outputs.target_repo }}
           target-dir: ${{ steps.target.outputs.target_checkout_dir }}
 
-      - name: Mark re-review command in progress
-        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' }}
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
-          TARGET_REPO: ${{ steps.target.outputs.target_repo }}
-          ITEM_NUMBER: ${{ steps.target.outputs.item_number }}
-          COMMAND_STATUS_MARKER: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).commandStatusMarker || '' }}
-          STATUS_COMMENT_ID: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).statusCommentId || '' }}
-          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          pnpm run repair:update-command-status -- \
-            --repo "$TARGET_REPO" \
-            --item-number "$ITEM_NUMBER" \
-            --marker "$COMMAND_STATUS_MARKER" \
-            --status-comment-id "$STATUS_COMMENT_ID" \
-            --state "Review in progress" \
-            --detail "The exact-review queue leased this run; Codex is reviewing the item." \
-            --run-url "$RUN_URL" \
-            --wait-ms 120000
-
       - uses: ./.github/actions/setup-codex
-        if: ${{ env.CLAWSWEEPER_RUNNER != 'openclaw' && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' }}
+        if: ${{ env.CLAWSWEEPER_RUNNER != 'openclaw' && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && (steps.command-status-fence.outcome == 'skipped' || steps.command-status-fence.outputs.authorized == 'true') }}
         env:
           OPENAI_API_KEY: ${{ vars.CLAWSWEEPER_CODEX_AUTH_MODE != 'clawrouter' && secrets.OPENAI_API_KEY || '' }}
           CLAWSWEEPER_INTERNAL_MODEL: ${{ vars.CLAWSWEEPER_CODEX_AUTH_MODE != 'clawrouter' && secrets.CLAWSWEEPER_MODEL || '' }}
@@ -971,11 +1035,11 @@ jobs:
           review-network: "true"
 
       - uses: ./.github/actions/setup-openclaw
-        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' }}
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.live-item.outputs.oversized != 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && (steps.command-status-fence.outcome == 'skipped' || steps.command-status-fence.outputs.authorized == 'true') }}
 
       - name: Reserve exact review lease
         id: reserve-exact-review-lease
-        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' }}
+        if: ${{ steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && (steps.command-status-fence.outcome == 'skipped' || steps.command-status-fence.outputs.authorized == 'true') }}
         env:
           GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
           TARGET_REPO: ${{ steps.target.outputs.target_repo }}
@@ -987,6 +1051,11 @@ jobs:
           EXACT_REVIEW_LEASE_REVISION: ${{ steps.claim-exact-review-queue.outputs.lease_revision }}
           EXACT_REVIEW_CLAIM_GENERATION: ${{ steps.claim-exact-review-queue.outputs.claim_generation }}
           EXACT_REVIEW_SOURCE_HEAD_SHA: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).sourceHeadSha || '' }}
+          EXACT_REVIEW_SOURCE_REVISION: ${{ steps.live-item.outputs.source_revision || '' }}
+          RESOLVED_STATUS_COMMENT_ID: ${{ steps.mark-re-review-command-in-progress.outputs.status_comment_id || '' }}
+          COMMAND_STATUS_MARKER: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).commandStatusMarker || '' }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          QUEUE_URL: ${{ vars.CLAWSWEEPER_EXACT_REVIEW_QUEUE_URL || 'https://clawsweeper.openclaw.ai' }}
           EXACT_REVIEW_QUEUE_URL: ${{ vars.CLAWSWEEPER_EXACT_REVIEW_QUEUE_URL || 'https://clawsweeper.openclaw.ai' }}
         run: |
           set -euo pipefail
@@ -1002,15 +1071,49 @@ jobs:
           codex_timeout_seconds=$(((CODEX_TIMEOUT_MS + 999) / 1000))
           media_preprocessing_reserve_seconds=480
           review_timeout_ms=$(((codex_timeout_seconds + media_preprocessing_reserve_seconds + 180) * 1000))
+          if [ -n "$RESOLVED_STATUS_COMMENT_ID" ]; then
+            if ! [[ "$RESOLVED_STATUS_COMMENT_ID" =~ ^[1-9][0-9]*$ ]]; then
+              echo "Invalid resolved command status comment id: $RESOLVED_STATUS_COMMENT_ID" >&2
+              exit 1
+            fi
+            refresh_output="$(mktemp)"
+            trap 'rm -f "$refresh_output"' EXIT
+            GITHUB_OUTPUT="$refresh_output" pnpm run repair:update-command-status -- \
+              --repo "$TARGET_REPO" \
+              --item-number "$ITEM_NUMBER" \
+              --marker "$COMMAND_STATUS_MARKER" \
+              --status-comment-id "$RESOLVED_STATUS_COMMENT_ID" \
+              --state "Review in progress" \
+              --detail "The exact-review reservation is active; Codex is reviewing the item." \
+              --run-url "$RUN_URL" \
+              --refuse-terminal-state \
+              --require-queue-authority-fence \
+              --require-mutation
+            if grep -qx 'queue_superseded=true' "$refresh_output" || grep -qx 'terminal_state=true' "$refresh_output"; then
+              echo "status=superseded" >> "$GITHUB_OUTPUT"
+              echo "queue_only=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            rm -f "$refresh_output"
+            trap - EXIT
+            echo "status=posted" >> "$GITHUB_OUTPUT"
+            echo "owner=github-run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+            echo "comment_id=$RESOLVED_STATUS_COMMENT_ID" >> "$GITHUB_OUTPUT"
+            echo "queue_only=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          reservation_args=(
+            --target-repo "$TARGET_REPO"
+            --item-number "$ITEM_NUMBER"
+            --review-timeout-ms "$review_timeout_ms"
+          )
           reservation=""
           reservation_error="$(mktemp)"
           trap 'rm -f "$reservation_error"' EXIT
           for attempt in 1 2 3 4 5; do
             : > "$reservation_error"
             if reservation="$(pnpm run --silent reserve-review-lease -- \
-              --target-repo "$TARGET_REPO" \
-              --item-number "$ITEM_NUMBER" \
-              --review-timeout-ms "$review_timeout_ms" 2>"$reservation_error")"; then
+              "${reservation_args[@]}" 2>"$reservation_error")"; then
               break
             else
               reserve_exit=$?
@@ -1052,6 +1155,7 @@ jobs:
             append("status", "posted");
             append("owner", owner);
             append("comment_id", String(commentId));
+            append("queue_only", "false");
             process.exit(0);
           }
           if (reservation.status === "held") {
@@ -1210,6 +1314,7 @@ jobs:
           QUEUE_URL: ${{ vars.CLAWSWEEPER_EXACT_REVIEW_QUEUE_URL || 'https://clawsweeper.openclaw.ai' }}
           REVIEW_LEASE_OWNER: ${{ steps.reserve-exact-review-lease.outputs.owner }}
           REVIEW_LEASE_COMMENT_ID: ${{ steps.reserve-exact-review-lease.outputs.comment_id }}
+          REVIEW_LEASE_QUEUE_ONLY: ${{ steps.reserve-exact-review-lease.outputs.queue_only || 'false' }}
           SOURCE_ACTION: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).sourceAction || '' }}
           EXACT_REVIEW_DECISION: ${{ steps.claim-exact-review-queue.outputs.decision }}
         run: |
@@ -1349,6 +1454,13 @@ jobs:
           if [ -n "$PR_ADMISSION_FILE" ]; then
             admission_args=(--pr-admission-file "$PR_ADMISSION_FILE")
           fi
+          review_lease_args=(
+            --review-lease-owner "$REVIEW_LEASE_OWNER"
+            --review-lease-comment-id "$REVIEW_LEASE_COMMENT_ID"
+          )
+          if [ "$REVIEW_LEASE_QUEUE_ONLY" = "true" ]; then
+            review_lease_args+=(--trust-supplied-review-lease)
+          fi
           if [ "$OVERSIZED_PR" = "true" ]; then
             # GitHub updated_at has one-second granularity; let the reservation write precede the fresh observation and its clock margin.
             sleep 2
@@ -1377,8 +1489,7 @@ jobs:
             pnpm run review -- --target-repo "${{ steps.target.outputs.target_repo }}" \
               --artifact-dir artifacts/event --item-number "${{ steps.target.outputs.item_number }}" \
               --output-retention debug \
-              --review-lease-owner "$REVIEW_LEASE_OWNER" \
-              --review-lease-comment-id "$REVIEW_LEASE_COMMENT_ID" \
+              "${review_lease_args[@]}" \
               --skip-start-comment "${admission_args[@]}"
             start_heartbeat
             cleanup_heartbeat
@@ -1422,8 +1533,7 @@ jobs:
             --item-numbers "${{ steps.target.outputs.item_number }}" \
             --readonly-openclaw \
             --skip-start-comment \
-            --review-lease-owner "$REVIEW_LEASE_OWNER" \
-            --review-lease-comment-id "$REVIEW_LEASE_COMMENT_ID" \
+            "${review_lease_args[@]}" \
             --shard-index 0 \
             --shard-count 1 \
             --review-source-action "$SOURCE_ACTION" \
@@ -1945,7 +2055,7 @@ jobs:
           exit 1
 
       - name: Expire queued exact review lease
-        if: ${{ always() && !cancelled() && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.queue-exact-review-publication.outcome == 'success' && steps.direct-exact-review-publication.outputs.accepted != 'true' && steps.reserve-exact-review-lease.outputs.status == 'posted' }}
+        if: ${{ always() && !cancelled() && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.queue-exact-review-publication.outcome == 'success' && steps.direct-exact-review-publication.outputs.accepted != 'true' && steps.reserve-exact-review-lease.outputs.status == 'posted' && steps.reserve-exact-review-lease.outputs.queue_only != 'true' }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
@@ -1958,7 +2068,7 @@ jobs:
             --repo "$TARGET_REPO" --item-number "$ITEM_NUMBER" --comment-id "$COMMENT_ID"
 
       - name: Release unsuccessful workflow-owned review lease
-        if: ${{ always() && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.reserve-exact-review-lease.outputs.status != 'held' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_rate_limit' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_transient' && steps.direct-exact-review-publication.outputs.accepted != 'true' && steps.queue-exact-review-publication.outcome != 'success' }}
+        if: ${{ always() && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.live-item.outputs.proceed == 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.reserve-exact-review-lease.outputs.status != 'held' && steps.reserve-exact-review-lease.outputs.queue_only != 'true' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_rate_limit' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_transient' && steps.direct-exact-review-publication.outputs.accepted != 'true' && steps.queue-exact-review-publication.outcome != 'success' }}
         env:
           GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
           TARGET_REPO: ${{ steps.target.outputs.target_repo }}
@@ -1991,7 +2101,7 @@ jobs:
           done <<< "$reaction_ids"
 
       - name: Mark unsuccessful re-review
-        if: ${{ always() && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.target.outputs.has_command_context == 'true' && steps.setup-pnpm.outcome == 'success' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_rate_limit' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_transient' && steps.direct-exact-review-publication.outputs.accepted != 'true' && steps.queue-exact-review-publication.outcome != 'success' && steps.target-write-token.outputs.token != '' }}
+        if: ${{ always() && steps.claim-exact-review-queue.outputs.claimed == 'true' && steps.target.outputs.has_command_context == 'true' && steps.mark-re-review-command-in-progress.outputs.terminal_state != 'true' && steps.mark-re-review-command-in-progress.outputs.queue_superseded != 'true' && steps.command-status-fence.outputs.superseded != 'true' && steps.review-exact-event-item.outputs.superseded != 'true' && steps.review-status-fence.outputs.superseded != 'true' && steps.release-review-status-fence.outputs.superseded != 'true' && steps.review-complete-status-fence.outputs.superseded != 'true' && steps.release-review-complete-status-fence.outputs.superseded != 'true' && steps.setup-pnpm.outcome == 'success' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_rate_limit' && steps.prepare-direct-exact-review-publication.outputs.failure_kind != 'github_transient' && steps.direct-exact-review-publication.outputs.accepted != 'true' && steps.queue-exact-review-publication.outcome != 'success' && steps.target-write-token.outputs.token != '' }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
@@ -2005,8 +2115,43 @@ jobs:
           RESERVATION_STATUS: ${{ steps.reserve-exact-review-lease.outputs.status }}
           RETRY_AT: ${{ steps.reserve-exact-review-lease.outputs.retry_at || steps.review-exact-event-item.outputs.retry_at }}
           REVIEW_FAILURE_REASON: ${{ steps.review-exact-event-item.outputs.failure_reason || '' }}
+          QUEUE_URL: ${{ vars.CLAWSWEEPER_EXACT_REVIEW_QUEUE_URL || 'https://clawsweeper.openclaw.ai' }}
+          EXACT_REVIEW_ITEM_KEY: ${{ steps.claim-exact-review-queue.outputs.item_key }}
+          EXACT_REVIEW_LEASE_ID: ${{ steps.claim-exact-review-queue.outputs.lease_id }}
+          EXACT_REVIEW_LEASE_REVISION: ${{ steps.claim-exact-review-queue.outputs.lease_revision }}
+          EXACT_REVIEW_CLAIM_GENERATION: ${{ steps.claim-exact-review-queue.outputs.claim_generation }}
+          EXACT_REVIEW_SOURCE_HEAD_SHA: ${{ fromJSON(steps.claim-exact-review-queue.outputs.decision).sourceHeadSha || '' }}
           CLAWSWEEPER_ACTION_LEDGER_DISABLED: "1"
         run: |
+          set -euo pipefail
+          source scripts/control-plane-curl.sh
+          payload="$(node -e '
+            const sourceHeadSha = String(process.env.EXACT_REVIEW_SOURCE_HEAD_SHA || "").trim().toLowerCase();
+            process.stdout.write(JSON.stringify({
+              item_key: process.env.EXACT_REVIEW_ITEM_KEY,
+              lease_id: process.env.EXACT_REVIEW_LEASE_ID,
+              lease_revision: Number(process.env.EXACT_REVIEW_LEASE_REVISION),
+              claim_generation: Number(process.env.EXACT_REVIEW_CLAIM_GENERATION),
+              run_id: process.env.GITHUB_RUN_ID,
+              run_attempt: Number(process.env.GITHUB_RUN_ATTEMPT),
+              ...(sourceHeadSha ? { source_head_sha: sourceHeadSha } : {}),
+              phase: "status",
+            }));
+          ')"
+          response="$(mktemp)"
+          trap 'rm -f "$response"' EXIT
+          status="$(control_plane_curl --silent --show-error --connect-timeout 5 --max-time 20 \
+            --output "$response" --write-out '%{http_code}' --request POST \
+            --header "content-type: application/json" --data-binary "$payload" \
+            "${QUEUE_URL%/}/internal/exact-review/heartbeat")" || status=""
+          if [ "$status" = "409" ] && jq -e '.error == "lease_superseded" or .error == "lease_not_active"' "$response" >/dev/null; then
+            echo "::notice::Skipping unsuccessful command status because the exact-review queue claim was superseded."
+            exit 0
+          fi
+          if [ "$status" != "200" ]; then
+            echo "Unable to fence unsuccessful command status against the active exact-review queue claim." >&2
+            exit 1
+          fi
           state="Failed"
           detail="The exact review did not produce a publishable artifact. The durable queue will determine whether this revision can retry or has exhausted its retry budget."
           if [ "$REVIEW_FAILURE_REASON" = "incomplete_source" ]; then
@@ -2034,7 +2179,9 @@ jobs:
             --status-comment-id "$STATUS_COMMENT_ID" \
             --state "$state" \
             --detail "$detail" \
-            --run-url "$RUN_URL"
+            --run-url "$RUN_URL" \
+            --refuse-terminal-state \
+            --require-queue-authority-fence
 
       - name: Fence terminal automatic review failure
         id: terminal-review-status-fence
@@ -2153,6 +2300,8 @@ jobs:
           TARGET_ENABLED: ${{ steps.target.outputs.target_enabled }}
           LIVE_OUTCOME: ${{ steps.live-item.outcome }}
           SCHEDULED_SEMANTIC_NOOP: ${{ steps.live-item.outputs.scheduled_semantic_noop || 'false' }}
+          COMMAND_TERMINAL_STATE: ${{ steps.mark-re-review-command-in-progress.outputs.terminal_state || 'false' }}
+          COMMAND_AUTHORITY_SUPERSEDED: ${{ steps.command-status-fence.outputs.superseded == 'true' || steps.mark-re-review-command-in-progress.outputs.queue_superseded == 'true' }}
           REVIEW_OUTCOME: ${{ steps.review-exact-event-item.outcome }}
           REVIEW_SUPERSEDED: ${{ steps.review-exact-event-item.outputs.superseded == 'true' || steps.review-status-fence.outputs.superseded == 'true' || steps.release-review-status-fence.outputs.superseded == 'true' || steps.review-complete-status-fence.outputs.superseded == 'true' || steps.release-review-complete-status-fence.outputs.superseded == 'true' }}
           RESERVATION_STATUS: ${{ steps.reserve-exact-review-lease.outputs.status }}
@@ -2177,6 +2326,10 @@ jobs:
           elif [ "$TARGET_ENABLED" = "false" ]; then
             outcome=success
           elif [ "$SCHEDULED_SEMANTIC_NOOP" = "true" ] && [ "$LIVE_OUTCOME" = "success" ]; then
+            outcome=success
+          elif [ "$COMMAND_TERMINAL_STATE" = "true" ]; then
+            outcome=success
+          elif [ "$COMMAND_AUTHORITY_SUPERSEDED" = "true" ]; then
             outcome=success
           elif [ "$RESERVATION_STATUS" = "superseded" ] || [ "$REVIEW_SUPERSEDED" = "true" ]; then
             outcome=success

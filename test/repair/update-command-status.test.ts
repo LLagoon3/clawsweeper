@@ -6,6 +6,7 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  exactReviewQueueAuthorityFence,
   mergeCommandProgressSection,
   parseOptions,
   selectCommandStatusComment,
@@ -64,6 +65,36 @@ test("parseOptions requires a status mutation only when explicitly requested", (
   ]);
 
   assert.equal(options.requireMutation, true);
+});
+
+test("parseOptions can refuse terminal command rewrites", () => {
+  assert.equal(parseOptions(["--refuse-terminal-state"]).refuseTerminalState, true);
+  assert.equal(parseOptions([]).refuseTerminalState, false);
+  assert.equal(parseOptions(["--require-queue-authority-fence"]).requireQueueAuthorityFence, true);
+});
+
+test("exact review queue fence allows the owner and rejects supersession", async () => {
+  let responseStatus = 200;
+  let invocation: { file: string; args: string[] } | undefined;
+  const execute = (file: string, args: string[]) => {
+    invocation = { file, args };
+    return `${JSON.stringify(responseStatus === 200 ? { ok: true } : { error: "lease_superseded" })}\n${responseStatus}`;
+  };
+  const env = {
+    QUEUE_URL: "https://clawsweeper.example",
+    EXACT_REVIEW_ITEM_KEY: "openclaw/clawsweeper#1675",
+    EXACT_REVIEW_LEASE_ID: "lease-1",
+    EXACT_REVIEW_LEASE_REVISION: "8",
+    EXACT_REVIEW_CLAIM_GENERATION: "2",
+    EXACT_REVIEW_SOURCE_HEAD_SHA: "a".repeat(40),
+    GITHUB_RUN_ID: "4242",
+    GITHUB_RUN_ATTEMPT: "3",
+  };
+  assert.equal(await exactReviewQueueAuthorityFence(env, execute), true);
+  assert.equal(invocation?.file, "bash");
+  assert.match(invocation?.args.join(" ") ?? "", /control-plane-curl\.sh/);
+  responseStatus = 409;
+  assert.equal(await exactReviewQueueAuthorityFence(env, execute), false);
 });
 
 test("terminal receipt verification is opt-in", () => {
@@ -431,9 +462,9 @@ test("parseOptions enables the terminal locked-conversation skip only when reque
   );
 });
 
-test("terminal locked-conversation skip covers status selection and duplicate cleanup", () => {
+test("terminal locked-conversation skip covers status selection", () => {
   const source = readText("src/repair/update-command-status.ts");
-  const selection = source.indexOf("comment = await findCommandStatusComment(options, lifecycle)");
+  const selection = source.indexOf("comment = await findCommandStatusComment(options)");
   const caught = source.indexOf(
     "recordTerminalLockedConversationSkip(options, lifecycle, error)",
     selection,
@@ -590,6 +621,54 @@ test("legacy command updates verify their receipt without creating duplicate ack
         fs.rmSync(tmp, { recursive: true, force: true });
       }
     }
+  }
+});
+
+test("refusal mode exposes a verified terminal receipt as terminal state", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "clawsweeper-terminal-command-status-"));
+  try {
+    const marker = "<!-- clawsweeper-command-status:115286:re_review:80a1f1 -->";
+    const comment = {
+      id: 5_150_578_737,
+      user: { login: "clawsweeper[bot]" },
+      updated_at: "2026-08-01T08:13:59Z",
+      body: [
+        marker,
+        "<!-- clawsweeper-command:5150571675:2026-08-01T08:13:51Z:re_review:80a1f1 -->",
+        "<!-- clawsweeper-command-progress:start -->",
+        "- State: Complete",
+        "- Detail: Done.",
+        "<!-- clawsweeper-command-progress:end -->",
+      ].join("\n"),
+    };
+    const result = runUpdateCommandStatus(
+      tmp,
+      [
+        "--repo",
+        "openclaw/openclaw",
+        "--item-number",
+        "115286",
+        "--marker",
+        marker,
+        "--status-comment-id",
+        String(comment.id),
+        "--state",
+        "Complete",
+        "--detail",
+        "Done.",
+        "--verify-terminal-status-receipt",
+        "--refuse-terminal-state",
+      ],
+      comment,
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.output, /^terminal_state=true$/m);
+    assert.match(result.output, new RegExp(`^status_comment_id=${comment.id}$`, "m"));
+    assert.match(result.output, /^terminal_status_verified=true$/m);
+    assert.equal(result.patchedBody, null);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
 
@@ -1124,4 +1203,44 @@ test("terminal command progress releases its command-owned review lease", () => 
   );
   assert.match(firstProgress, /- State: Complete/);
   assert.doesNotMatch(firstProgress, /clawsweeper-command-review-lease/);
+});
+
+test("queue-owned command progress exposes one hidden lease and failure removes it", () => {
+  const active = mergeCommandProgressSection("Exact review queued.", {
+    state: "Review in progress",
+    detail: "Reviewing.",
+    runUrl: "https://github.com/openclaw/clawsweeper/actions/runs/1",
+    queueLease: {
+      itemNumber: 42,
+      headSha: "a".repeat(40),
+      owner: "github-run-1-1",
+      startedAt: "2026-09-24T00:00:00.000Z",
+      expiresAt: "2026-09-24T01:00:00.000Z",
+    },
+  });
+  assert.match(active, /clawsweeper-review-status:started item=42/);
+  assert.match(active, /clawsweeper-command-review-lease item=42/);
+  const failed = mergeCommandProgressSection(active, {
+    state: "Failed",
+    detail: "Retry later.",
+    runUrl: "https://github.com/openclaw/clawsweeper/actions/runs/1",
+  });
+  assert.doesNotMatch(failed, /clawsweeper-(?:review-status:started|command-review-lease)/);
+  assert.match(failed, /- State: Failed/);
+
+  const foreign = active.replace("owner=github-run-1-1", "owner=github-run-2-1");
+  const refreshed = mergeCommandProgressSection(foreign, {
+    state: "Review in progress",
+    detail: "Reviewing again.",
+    runUrl: "https://github.com/openclaw/clawsweeper/actions/runs/2",
+    queueLease: {
+      itemNumber: 42,
+      headSha: "a".repeat(40),
+      owner: "github-run-1-1",
+      startedAt: "2026-09-24T00:01:00.000Z",
+      expiresAt: "2026-09-24T02:01:00.000Z",
+    },
+  });
+  assert.match(refreshed, /owner=github-run-1-1/);
+  assert.doesNotMatch(refreshed, /owner=github-run-2-1/);
 });

@@ -273,23 +273,142 @@ test("queued publication expires only its posted review lease after successful h
   for (const queued of ["success", "failure"]) {
     for (const accepted of ["true", "false"]) {
       for (const reservation of ["posted", "held", "superseded"]) {
-        const expression = expiry.if
-          .replace(/^\$\{\{\s*|\s*\}\}$/g, "")
-          .replace("always()", "true")
-          .replace("cancelled()", "false")
-          .replace("steps.claim-exact-review-queue.outputs.claimed", "'true'")
-          .replace("steps.queue-exact-review-publication.outcome", JSON.stringify(queued))
-          .replace(
-            "steps.direct-exact-review-publication.outputs.accepted",
-            JSON.stringify(accepted),
-          )
-          .replace("steps.reserve-exact-review-lease.outputs.status", JSON.stringify(reservation));
-        assert.equal(
-          Function(`return (${expression});`)(),
-          queued === "success" && accepted !== "true" && reservation === "posted",
-        );
+        for (const queueOnly of ["true", "false"]) {
+          const expression = expiry.if
+            .replace(/^\$\{\{\s*|\s*\}\}$/g, "")
+            .replace("always()", "true")
+            .replace("cancelled()", "false")
+            .replace("steps.claim-exact-review-queue.outputs.claimed", "'true'")
+            .replace("steps.queue-exact-review-publication.outcome", JSON.stringify(queued))
+            .replace(
+              "steps.direct-exact-review-publication.outputs.accepted",
+              JSON.stringify(accepted),
+            )
+            .replace("steps.reserve-exact-review-lease.outputs.status", JSON.stringify(reservation))
+            .replace(
+              "steps.reserve-exact-review-lease.outputs.queue_only",
+              JSON.stringify(queueOnly),
+            );
+          assert.equal(
+            Function(`return (${expression});`)(),
+            queued === "success" &&
+              accepted !== "true" &&
+              reservation === "posted" &&
+              queueOnly !== "true",
+          );
+        }
       }
     }
+  }
+});
+
+test("queue-only command review proves allowed and superseded authority before GitHub mutation", () => {
+  const workflow = YAML.parse(readText(".github/workflows/sweep.yml"));
+  const steps = workflow.jobs["event-review-apply"].steps;
+  const reservation = steps.find((entry: any) => entry.id === "reserve-exact-review-lease");
+  const commandFence = steps.find((entry: any) => entry.id === "command-status-fence");
+  const markCommand = steps.find((entry: any) => entry.id === "mark-re-review-command-in-progress");
+  assert.match(markCommand.if, /command-status-fence\.outputs\.authorized == 'true'/);
+  const root = mkdtempSync(`${tmpPrefix}queue-only-proof-`);
+  try {
+    const bin = join(root, "bin");
+    const refreshLog = join(root, "status-refresh");
+    mkdirSync(bin);
+    writeFileSync(join(bin, "pnpm"), '#!/bin/sh\nprintf \'%s\\n\' "$*" > "$REFRESH_LOG"\n');
+    chmodSync(join(bin, "pnpm"), 0o700);
+    const reservationOutput = join(root, "reservation-output");
+    execFileSync("bash", ["-e", "-u", "-c", reservation.run], {
+      env: {
+        ...process.env,
+        PATH: `${bin}${delimiter}${process.env.PATH}`,
+        GH_TOKEN: "fixture-token",
+        TARGET_REPO: "openclaw/clawsweeper",
+        ITEM_NUMBER: "1675",
+        CODEX_TIMEOUT_MS: "2700000",
+        MEDIA_PROOF_TIMEOUT_MS: "480000",
+        RESOLVED_STATUS_COMMENT_ID: "7001",
+        COMMAND_STATUS_MARKER: "<!-- clawsweeper-command-status:1675:re_review:fixture -->",
+        RUN_URL: "https://github.com/openclaw/clawsweeper/actions/runs/4242",
+        REFRESH_LOG: refreshLog,
+        GITHUB_OUTPUT: reservationOutput,
+        GITHUB_RUN_ID: "4242",
+        GITHUB_RUN_ATTEMPT: "3",
+      },
+    });
+    const reservationResult = readText(reservationOutput);
+    assert.match(reservationResult, /^status=posted$/m);
+    assert.match(reservationResult, /^owner=github-run-4242-3$/m);
+    assert.match(reservationResult, /^comment_id=7001$/m);
+    assert.match(reservationResult, /^queue_only=true$/m);
+    assert.match(readText(refreshLog), /repair:update-command-status/);
+    assert.match(readText(refreshLog), /--require-queue-authority-fence/);
+    assert.match(readText(refreshLog), /--require-mutation/);
+
+    const fenceScript = commandFence.run.slice(commandFence.run.indexOf('echo "authorized=false"'));
+    const supersededOutput = join(root, "superseded-output");
+    const mutationLog = join(root, "github-mutations");
+    execFileSync(
+      "bash",
+      [
+        "-e",
+        "-u",
+        "-c",
+        `
+        control_plane_curl() {
+          local output=""
+          while [ "$#" -gt 0 ]; do
+            if [ "$1" = "--output" ]; then output="$2"; shift 2; else shift; fi
+          done
+          printf '%s' '{"error":"lease_superseded"}' > "$output"
+          printf '409'
+        }
+        ${fenceScript}
+        printf 'unexpected GitHub mutation\n' > "$MUTATION_LOG"
+      `,
+      ],
+      {
+        env: {
+          ...process.env,
+          GITHUB_OUTPUT: supersededOutput,
+          GITHUB_RUN_ID: "4242",
+          GITHUB_RUN_ATTEMPT: "3",
+          MUTATION_LOG: mutationLog,
+          QUEUE_URL: "http://127.0.0.1",
+          EXACT_REVIEW_ITEM_KEY: "openclaw/clawsweeper#1675",
+          EXACT_REVIEW_LEASE_ID: "fixture-lease",
+          EXACT_REVIEW_LEASE_REVISION: "8",
+          EXACT_REVIEW_CLAIM_GENERATION: "2",
+          EXACT_REVIEW_SOURCE_HEAD_SHA: "a".repeat(40),
+        },
+      },
+    );
+    const supersededResult = readText(supersededOutput);
+    assert.match(supersededResult, /^superseded=true$/m);
+    assert.equal(existsSync(mutationLog), false);
+
+    const proofDir = process.env.CLAWSWEEPER_QUEUE_ONLY_PROOF_DIR;
+    if (proofDir) {
+      mkdirSync(proofDir, { recursive: true });
+      writeFileSync(
+        join(proofDir, "summary.json"),
+        JSON.stringify(
+          {
+            head: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+            allowed: {
+              output: reservationResult.trim().split("\n"),
+              statusRefreshInvocations: 1,
+            },
+            superseded: { output: supersededResult.trim().split("\n"), githubMutations: 0 },
+            surface: "production workflow shell extracted from .github/workflows/sweep.yml",
+            limits: "Controlled queue and GitHub boundary; no production mutation or model review.",
+          },
+          null,
+          2,
+        ),
+      );
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });
 
@@ -442,6 +561,10 @@ test("exact event review builds the admission predicate before signals and targe
       index((step) => step.name === "Create target write token", "write token"),
     ],
     [
+      "command terminal check",
+      index((step) => step.name === "Mark re-review command in progress", "command status"),
+    ],
+    [
       "eyes reaction",
       index((step) => step.name === "React to target item review start", "reaction"),
     ],
@@ -466,7 +589,7 @@ test("exact event review builds the admission predicate before signals and targe
     );
   }
   assert.equal(steps[ordered[2][1]]!["continue-on-error"], true);
-  assert.equal(steps[ordered[7][1]]!.id, "reserve-exact-review-lease");
+  assert.equal(steps[ordered[8][1]]!.id, "reserve-exact-review-lease");
 });
 
 test("OpenClaw review jobs provision the pinned sibling Codex source before review", () => {
@@ -1252,9 +1375,41 @@ test("exact event review publishes directly with a queue-bounded canonical fallb
   }
 
   const reserveLease = step(reviewer, "Reserve exact review lease");
+  const markCommandInProgress = step(reviewer, "Mark re-review command in progress");
+  const reactToReviewStart = step(reviewer, "React to target item review start");
+  assert.doesNotMatch(markCommandInProgress.if ?? "", /oversized/);
+  assert.match(markCommandInProgress.if ?? "", /has_command_context == 'true'/);
+  assert.notEqual(markCommandInProgress["continue-on-error"], true);
+  assert.ok(
+    reviewer.steps.indexOf(markCommandInProgress) < reviewer.steps.indexOf(reactToReviewStart),
+  );
+  assert.match(reactToReviewStart.if ?? "", /terminal_state != 'true'/);
+  assert.match(reserveLease.if ?? "", /terminal_state != 'true'/);
   assert.equal(reserveLease.env?.GH_TOKEN, "${{ steps.target-write-token.outputs.token }}");
   assert.match(reserveLease.run ?? "", /pnpm run --silent reserve-review-lease/);
   assert.match(reserveLease.run ?? "", /review-timeout-ms/);
+  assert.equal(
+    reserveLease.env?.RESOLVED_STATUS_COMMENT_ID,
+    "${{ steps.mark-re-review-command-in-progress.outputs.status_comment_id || '' }}",
+  );
+  assert.match(reserveLease.run ?? "", /queue_only=true/);
+  assert.match(reserveLease.run ?? "", /repair:update-command-status/);
+  assert.match(reserveLease.run ?? "", /--status-comment-id "\$RESOLVED_STATUS_COMMENT_ID"/);
+  assert.match(reserveLease.run ?? "", /--require-queue-authority-fence/);
+  assert.match(reserveLease.run ?? "", /--require-mutation/);
+  assert.ok(
+    (reserveLease.run ?? "").indexOf("review_timeout_ms=") <
+      (reserveLease.run ?? "").indexOf('if [ -n "$RESOLVED_STATUS_COMMENT_ID" ]'),
+  );
+  assert.match(
+    readText("src/repair/update-command-status.ts"),
+    /COMMAND_REVIEW_LEASE_MS = 64 \* 60_000/,
+  );
+  assert.equal(
+    step(reviewer, "Review exact event item").env?.REVIEW_LEASE_QUEUE_ONLY,
+    "${{ steps.reserve-exact-review-lease.outputs.queue_only || 'false' }}",
+  );
+  assert.match(step(reviewer, "Review exact event item").run ?? "", /trust-supplied-review-lease/);
   assert.match(reserveLease.run ?? "", /for attempt in 1 2 3 4 5/);
   assert.match(reserveLease.run ?? "", /RANDOM % 4/);
   assert.match(reserveLease.run ?? "", /status.*superseded/);
@@ -1555,6 +1710,15 @@ test("exact event review publishes directly with a queue-bounded canonical fallb
     generationResult.env?.DIRECT_PUBLICATION_RETRY_AT,
     "${{ steps.prepare-direct-exact-review-publication.outputs.retry_at }}",
   );
+  assert.equal(
+    generationResult.env?.COMMAND_TERMINAL_STATE,
+    "${{ steps.mark-re-review-command-in-progress.outputs.terminal_state || 'false' }}",
+  );
+  assert.equal(
+    generationResult.env?.COMMAND_AUTHORITY_SUPERSEDED,
+    "${{ steps.command-status-fence.outputs.superseded == 'true' || steps.mark-re-review-command-in-progress.outputs.queue_superseded == 'true' }}",
+  );
+  assert.match(generationResult.run ?? "", /COMMAND_AUTHORITY_SUPERSEDED.*outcome=success/s);
   assert.match(
     generationResult.run ?? "",
     /DIRECT_PUBLICATION_FAILURE_KIND.*github_rate_limit.*PUBLICATION_QUEUE_OUTCOME.*!=.*success[\s\S]*retry_kind=throttle[\s\S]*retry_at="\$DIRECT_PUBLICATION_RETRY_AT"/,
@@ -1578,6 +1742,8 @@ test("exact event review publishes directly with a queue-bounded canonical fallb
           DIRECT_PUBLICATION_RETRY_AT: "",
           TARGET_ENABLED: "true",
           LIVE_OUTCOME: "success",
+          COMMAND_TERMINAL_STATE: "false",
+          COMMAND_AUTHORITY_SUPERSEDED: "false",
           REVIEW_OUTCOME: "success",
           REVIEW_SUPERSEDED: "false",
           RESERVATION_STATUS: "",
@@ -1604,6 +1770,20 @@ test("exact event review publishes directly with a queue-bounded canonical fallb
     }
   };
   const directRetryAt = "2026-08-06T00:00:00.000Z";
+  assert.deepEqual(runGenerationResult({ COMMAND_TERMINAL_STATE: "true" }), {
+    outcome: "success",
+    requeue_latest: "false",
+    direct_lifecycle_requeue: "false",
+    retry_kind: "",
+    retry_at: "",
+  });
+  assert.deepEqual(runGenerationResult({ COMMAND_AUTHORITY_SUPERSEDED: "true" }), {
+    outcome: "success",
+    requeue_latest: "false",
+    direct_lifecycle_requeue: "false",
+    retry_kind: "",
+    retry_at: "",
+  });
   assert.deepEqual(
     runGenerationResult({
       DIRECT_PUBLICATION_FAILURE_KIND: "github_rate_limit",
@@ -1726,6 +1906,21 @@ test("exact event review publishes directly with a queue-bounded canonical fallb
     /exact-review-generation-result\.outputs\.retry_kind == ''/,
   );
   assert.match(releaseGeneration.if ?? "", /reserve-exact-review-lease\.outputs\.status != 'held'/);
+  assert.match(releaseGeneration.if ?? "", /terminal_state != 'true'/);
+  assert.match(markUnsuccessful.if ?? "", /terminal_state != 'true'/);
+  assert.match(markUnsuccessful.if ?? "", /review-exact-event-item\.outputs\.superseded != 'true'/);
+  assert.match(
+    markUnsuccessful.if ?? "",
+    /release-review-complete-status-fence\.outputs\.superseded != 'true'/,
+  );
+  assert.match(markUnsuccessful.run ?? "", /--refuse-terminal-state/);
+  assert.match(markUnsuccessful.run ?? "", /--require-queue-authority-fence/);
+  assert.match(markUnsuccessful.run ?? "", /internal\/exact-review\/heartbeat/);
+  assert.ok(
+    (markUnsuccessful.run ?? "").indexOf("internal/exact-review/heartbeat") <
+      (markUnsuccessful.run ?? "").indexOf('state="Failed"'),
+  );
+  assert.match(markUnsuccessful.run ?? "", /lease_superseded.*exit 0/s);
   assert.match(releaseGeneration.run ?? "", /content == "eyes"/);
   for (const cleanup of [releaseGeneration, step(reviewer, "Mark unsuccessful re-review")]) {
     for (const kind of ["github_rate_limit", "github_transient"]) {
@@ -7467,6 +7662,8 @@ test("exact oversized PR admission uses the built predicate before reactions, re
   const reserve = steps.find((step: any) => step.id === "reserve-exact-review-lease");
   assert.doesNotMatch(reserve.if, /oversized/);
   assert.match(reserve.if, /live-item\.outputs\.proceed == 'true'/);
+  const commandStatus = steps.find((step: any) => step.id === "mark-re-review-command-in-progress");
+  assert.doesNotMatch(commandStatus.if, /oversized/);
   const fence = steps.find((step: any) => step.id === "review-status-fence");
   assert.doesNotMatch(fence.if, /oversized/);
   const oversizedBranch = review.run.slice(
@@ -7474,8 +7671,7 @@ test("exact oversized PR admission uses the built predicate before reactions, re
     review.run.indexOf('codex_timeout_ms="'),
   );
   assert.match(oversizedBranch, /--output-retention debug/);
-  assert.match(oversizedBranch, /--review-lease-owner "\$REVIEW_LEASE_OWNER"/);
-  assert.match(oversizedBranch, /--review-lease-comment-id "\$REVIEW_LEASE_COMMENT_ID"/);
+  assert.match(oversizedBranch, /review_lease_args\[@\]/);
   for (const reservation of ["posted", "held", "superseded", ""]) {
     for (const authorized of [true, false]) {
       const condition = review.if
@@ -7584,6 +7780,7 @@ for (const scenario of [
         heartbeat_payload='{}'
         superseded_marker="$TEST_ROOT/superseded"
         admission_args=(--pr-admission-file "$PR_ADMISSION_FILE")
+        review_lease_args=(--review-lease-owner "$REVIEW_LEASE_OWNER" --review-lease-comment-id "$REVIEW_LEASE_COMMENT_ID")
         ${finalize}
         ${branch}
         exit 91
