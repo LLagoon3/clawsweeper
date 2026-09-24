@@ -1,0 +1,87 @@
+{
+  "targetHead": "2c3cad792a279d73c2ef607552aad2fa38733879",
+  "base": "9e699cd65b6ca74805280e150657904be9abf64c",
+  "source": "complete committed range, canonical pinned native scanner",
+  "prompt": {
+    "kind": "supplied",
+    "bytes": 124462,
+    "sha256": "7b51f9d43971b8b1ece943554332949a788044419b4eeaabcef2bdff242faba0"
+  },
+  "schema": {
+    "bytes": 57818,
+    "sha256": "9020b3b32de50c91ce15299b80a9028434fc38722986bcbfd58d8fe739c4cd34"
+  },
+  "limits": "No model execution; hosted review must rescan its own prompt, schema, and source inputs.",
+  "verification": "canonical enabled",
+  "result": "admitted",
+  "elapsedMs": 3488,
+  "notices": [
+    {
+      "event": "agent_input_scan_classified",
+      "notice": "Reviewed synthetic fixture findings classified as non-sensitive.",
+      "fixtureSha256": "662a886a0fd7447dad0acda3aeccc9eb539fc90438b453de7e2f523ca7ee6c83",
+      "source": "skills/autoreview/tests/test_autoreview_hardening.py",
+      "detector": "URI",
+      "findings": [
+        {
+          "blob": "de010ae60dfe6d7d529a53a3bbd5be7e1aa29bf1",
+          "scannerLine": 4878,
+          "literalLine": 4878,
+          "decoder": "PLAIN",
+          "role": "head",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "event": "agent_input_scan_classified",
+      "notice": "Reviewed synthetic fixture findings classified as non-sensitive.",
+      "fixtureSha256": "80842079cf4e73add753d25a74646356617b39c399e77d38b34bb21818e303d2",
+      "source": "skills/autoreview/tests/test_autoreview_hardening.py",
+      "detector": "URI",
+      "findings": [
+        {
+          "blob": "77046bce188161a9cf7069a9054b64ee1f43baaf",
+          "scannerLine": 6913,
+          "literalLine": 6913,
+          "decoder": "PLAIN",
+          "role": "base",
+          "occurrences": 1
+        },
+        {
+          "blob": "de010ae60dfe6d7d529a53a3bbd5be7e1aa29bf1",
+          "scannerLine": 7226,
+          "literalLine": 7226,
+          "decoder": "PLAIN",
+          "role": "head",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "event": "agent_input_scan_classified",
+      "notice": "Reviewed synthetic fixture findings classified as non-sensitive.",
+      "fixtureSha256": "fe36092bead3bd47192a05374917c4614ce7642137dc83b9685ab6b5a37d8736",
+      "source": "skills/autoreview/tests/test_autoreview_hardening.py",
+      "detector": "URI",
+      "findings": [
+        {
+          "blob": "77046bce188161a9cf7069a9054b64ee1f43baaf",
+          "scannerLine": 6901,
+          "literalLine": 6901,
+          "decoder": "PLAIN",
+          "role": "base",
+          "occurrences": 1
+        },
+        {
+          "blob": "de010ae60dfe6d7d529a53a3bbd5be7e1aa29bf1",
+          "scannerLine": 7214,
+          "literalLine": 7214,
+          "decoder": "PLAIN",
+          "role": "head",
+          "occurrences": 1
+        }
+      ]
+    }
+  ]
+}

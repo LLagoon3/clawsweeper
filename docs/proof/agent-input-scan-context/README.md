@@ -522,3 +522,70 @@ source edit, or hosted-review replacement is claimed. The exact original hosted
 prompt was not retained; this is representative full-input proof, not its
 byte-for-byte recovery. OpenClaw Bay is unaffected: no dashboard, queue,
 publication, telemetry schema, or public action surface changes.
+
+### Autoreview shared-prefix follow-up: observed-variant qualification
+
+- Status: proposed host qualification; representative native compatibility proof complete.
+- Owner: ClawSweeper maintainers.
+- Source: `src/agent-input-scan-fixtures.ts` and the existing complete-input scanner.
+- Source baseline: `4233d61c38cd30e6c2fdfbd8ac140f7fba2bcc9e`.
+- Recheck when the native tuple, source witnesses, scanner pin, or classifier changes.
+
+Claim: qualify one genuinely observed unverified URI detector 17 / PLAIN variant
+at its complete ordered source witnesses. This is not a reproduced before/after
+fix or direct native exercise of the new attribution row.
+
+The earlier native hash-only observation recorded equal Raw and RawV2
+SHA-256 `7b8ee01b06a7e5b375164f2c45249bb258c75726a60b27e20a0ba6e42d5d0b27`.
+That scan of base blob `77046bce188161a9cf7069a9054b64ee1f43baaf` used the official
+TruffleHog 3.97.4 binary, exited 183 in 2.731 seconds, and reported four unknown,
+zero verified findings. Its raw finding output was not retained; the hash-only
+observation is not a recovered hosted record or a reconstructed native receipt.
+Its qualification requires both complete line witnesses, in order:
+`1a0920c31a227ead081fd2e6582572dfee060995e266a5520f66021acaa918c9`, then
+`c445f98d7d20b87bca6fead0e081385981add30abd58123db8d8d71c799d14a9`.
+Both source witnesses were independently verified at base lines 4566 and 4577,
+and at head blob `de010ae60dfe6d7d529a53a3bbd5be7e1aa29bf1` lines 4878 and 4889.
+Only `skills/autoreview/tests/test_autoreview_hardening.py`, mode `100644`, is
+qualified. The shorter native identity does not extend the older tuples to
+another decoder, mirror path, or value-only exemption.
+
+The registration regression retains hashes only. Generic ordered-witness tests
+reuse an unchanged existing two-line fixture through complete Git add, remove,
+and context material. They do not claim native observation of this new tuple.
+The focused scanner/fixture tests passed 514 cases. The same source passed the
+full check with 6,650 tests passing and 19 skipped on Linux, Node 24.21.0, and
+pnpm 12.4.1. The new literal was not copied into host test inputs.
+
+The complete-input compatibility proof used target range
+`9e699cd65b6ca74805280e150657904be9abf64c` through
+`2c3cad792a279d73c2ef607552aad2fa38733879`. The canonical offline range producer
+captured the actual item/context; the qualified remote build rendered a fresh
+124,462-byte review prompt and the actual 57,818-byte decision schema. Rendering
+preserved the context bytes. Target history was unavailable to the remote
+renderer, so its canonical introduction evidence explicitly reports unavailable.
+Both files were hash-matched back to the native proof host and passed explicitly
+to the unchanged `run-proof.mjs` runner.
+
+The [baseline receipt](autoreview-shared-prefix/baseline.json) admitted in 4.774
+seconds with four already-qualified fixture groups. The
+[patched receipt](autoreview-shared-prefix/after.json) admitted in 3.488 seconds
+with three already-qualified groups. Neither emitted the new `7b8ee01b...`
+identity. Both scans used the same complete source, prompt, schema, enabled
+verification, 180-second deadline, and official Darwin arm64 TruffleHog 3.97.4
+binary (SHA-256 `8c7af13e84f217bffd10aec09780fb7bbe59892187c99006291cef9c6f001beb`).
+The receipts preserve exact input hashes and the actual classified findings.
+There was one baseline scan and one patched scan; neither was retried to seek
+the new variant.
+
+These runs establish compatibility with the observed existing findings, not
+native execution of the new attribution row. The same-input variability
+precedent above explains why an absent finding is not negative proof. The
+original hosted Raw and prompt were not retained. This representative offline
+proof runs no model, recovers no historical hosted input, and does not replace a
+later hosted review's own complete-input scan.
+
+Release-note context: qualify the existing autoreview proxy-rejection prefix
+only with both ordered source witnesses, preserving complete input scanning.
+OpenClaw Bay is unaffected: this changes host fixture attribution, not a queue,
+publication, dashboard, or persisted-data contract.

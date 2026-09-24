@@ -59,6 +59,34 @@ test("WebVNC fixture policy retains both exact native identities and source witn
   ]);
 });
 
+test("autoreview prefix policy requires the two ordered canonical source witnesses", () => {
+  // Pin host policy without copying the target's credential-shaped fixture lines.
+  const source = readFileSync(
+    new URL("../src/agent-input-scan-fixtures.ts", import.meta.url),
+    "utf8",
+  );
+  const digest = "7b8ee01b06a7e5b375164f2c45249bb258c75726a60b27e20a0ba6e42d5d0b27";
+  const rows = source
+    .split("\n")
+    .filter((line) => line.includes(`"${digest}"`))
+    .map((line) => JSON.parse(line.trim().replace(/,$/, "")) as unknown);
+  assert.deepEqual(rows, [
+    [
+      17,
+      "URI",
+      "PLAIN",
+      digest,
+      digest,
+      [
+        "1a0920c31a227ead081fd2e6582572dfee060995e266a5520f66021acaa918c9",
+        "c445f98d7d20b87bca6fead0e081385981add30abd58123db8d8d71c799d14a9",
+      ],
+      "skills/autoreview/tests/test_autoreview_hardening.py",
+      "100644",
+    ],
+  ]);
+});
+
 function autoreviewFixtures(): {
   raw: string;
   rawV2?: string;
@@ -98,6 +126,7 @@ function fixturePatch(
   entries: ReturnType<typeof autoreviewFixtures>,
   change: "add" | "remove" | "context" = "add",
   companions: { source: string; entries: ReturnType<typeof autoreviewFixtures> }[] = [],
+  shiftHeadWitnesses = false,
 ) {
   const cwd = mkdtempSync(join(tmpdir(), "clawsweeper-reviewed-fixtures-"));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
@@ -123,7 +152,9 @@ function fixturePatch(
           : (change === "add") === (index === 1)
             ? body
             : "# fixture\n";
-      writeFileSync(path, bytes, { mode: 0o644 });
+      writeFileSync(path, index === 1 && shiftHeadWitnesses ? `# head offset\n${bytes}` : bytes, {
+        mode: 0o644,
+      });
       git("add", "--", fixture.source);
     }
     git("commit", "-qm", "fixture");
@@ -810,6 +841,50 @@ const crabboxConfigFixtures = [
   },
 ];
 
+for (const change of ["add", "remove", "context"] as const) {
+  test(`ordered witnesses bind both lines in a complete Git ${change} scan`, (t) => {
+    // Reuse unchanged qualified data; the new autoreview tuple is hash-only here.
+    const entry = crabboxConfigFixtures.find((fixture) => fixture.lines.length === 2)!;
+    const patch = fixturePatch(
+      t,
+      entry.source,
+      [{ ...entry, line: entry.lines.join("\n"), decoders: ["PLAIN"] }],
+      change,
+      [],
+      change === "context",
+    );
+    patch.inputs.set("/scanner/prompt", {
+      kind: "prompt",
+      id: "prompt",
+      bytes: Buffer.from("Read-only complete-material ordered-witness proof."),
+    });
+    patch.inputs.set("/scanner/schema", {
+      kind: "schema",
+      id: "schema",
+      bytes: readFileSync(new URL("../schema/clawsweeper-decision.schema.json", import.meta.url)),
+    });
+    const result = patch.classify("PLAIN");
+    assert.equal(result.kind, "classified", JSON.stringify(result));
+    if (result.kind !== "classified") return;
+    assert.ok(result.notices.flatMap(({ findings }) => findings).some(({ patch }) => patch));
+    if (change === "context") {
+      const witnesses = [...patch.inputs.values()].flatMap((input) =>
+        input.kind === "blob" ? [input] : [],
+      );
+      assert.equal(witnesses.length, 2);
+      assert.notEqual(witnesses[0]!.id, witnesses[1]!.id);
+      assert.notEqual(
+        witnesses[0]!.bytes!.indexOf(entry.rawV2),
+        witnesses[1]!.bytes!.indexOf(entry.rawV2),
+      );
+      assert.deepEqual(
+        new Set(witnesses.flatMap((input) => input.references.map(({ role }) => role))),
+        new Set(["base", "head"]),
+      );
+    }
+  });
+}
+
 for (const [index, entry] of crabboxConfigFixtures.entries()) {
   test(`Crabbox config fixture ${index + 1} binds exact committed source witnesses`, () => {
     const file = "/scanner/crabbox-fixture";
@@ -900,6 +975,14 @@ for (const [index, entry] of crabboxConfigFixtures.entries()) {
     if (entry.lines.length > 1) {
       refused("ordered witnesses", classify([...entry.lines].reverse()));
       refused("missing witness", classify(entry.lines.slice(0, 1)));
+      refused("missing first witness", classify(entry.lines.slice(1)));
+      refused("raw identity", classify(undefined, undefined, { Raw: entry.raw + "x" }));
+      for (const index of entry.lines.keys()) {
+        refused(
+          `changed witness ${index}`,
+          classify(entry.lines.map((line, candidate) => (candidate === index ? line + " " : line))),
+        );
+      }
     }
   });
 }
