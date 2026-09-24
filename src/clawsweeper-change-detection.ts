@@ -1,4 +1,5 @@
 import { isOpenClawTestRolePath } from "./openclaw-file-role.js";
+import { escapeRegExp } from "./clawsweeper-text.js";
 import type {
   ConfigSurfaceChange,
   DataModelChange,
@@ -382,6 +383,7 @@ function dataModelSurfacesFromPatch(
 
   const surfaces = new Set<string>();
   const add = (surface: string) => surfaces.add(dataModelSurfaceLabel(path, surface));
+  if (dataModelPatchChangesExistingStatePath(options.patch ?? "")) add("serialized state");
   const pathOwner = dataModelPathOwner(path);
   const pathHint = pathOwner?.surface ?? "";
   if (
@@ -436,7 +438,8 @@ function dataModelSurfacesFromPatch(
       if (
         dataModelTextLooksLikePersistedShapeField(changedFieldText, surface) ||
         dataModelTextHasJsonConversion(changedText) ||
-        (surface === "serialized state" && dataModelTextHasFileRead(changedText))
+        (surface === "serialized state" &&
+          (dataModelTextHasFileIo(changedText, true) || /\bstatePath\b/i.test(changedText)))
       )
         add(surface);
     }
@@ -485,11 +488,58 @@ function dataModelTextHasFileRead(text: string): boolean {
   return /\breadFile(?:Sync)?\b/i.test(text);
 }
 
+function dataModelTextHasFileIo(text: string, hasStorageContext = false): boolean {
+  if (
+    dataModelTextHasFileRead(text) ||
+    /\b(?:create(?:Read|Write)Stream|(?:appendFile|truncate|ftruncate)(?:Sync)?|openSync|readSync|readv(?:Sync)?|writeSync|writev(?:Sync)?)\b/.test(
+      text,
+    )
+  )
+    return true;
+  // Generic methods also belong to browsers and in-memory streams. They can
+  // count as a change inside storage context, but cannot establish it alone.
+  if (hasStorageContext) return /\b(?:open|read|write)(?:["'`]\s*\])?\s*(?:\?\.\s*)?\(/i.test(text);
+  const qualifiers = ["fs", "fsp", "fsPromises"];
+  for (const match of text.matchAll(
+    /\bimport\s+(?:([\w$]+)(?:\s*,\s*(?:\*\s+as\s+([\w$]+)|\{[^}]*\}))?|\*\s+as\s+([\w$]+))\s*from\s*["'](?:node:)?fs(?:\/promises)?["']/g,
+  )) {
+    for (const name of match.slice(1)) {
+      if (name) qualifiers.push(name);
+    }
+  }
+  for (const match of text.matchAll(
+    /\bimport\s+(?:[\w$]+\s*,\s*)?\{([^}]+)\}\s*from\s*["'](?:node:)?fs(?:\/promises)?["']/g,
+  )) {
+    const bindings = match[1];
+    if (!bindings) continue;
+    for (const binding of bindings.split(",")) {
+      const name = binding.trim().match(/^(open|read|write|promises)(?:\s+as\s+([\w$]+))?$/);
+      if (!name) continue;
+      const localName = name[2] ?? name[1];
+      if (!localName) continue;
+      if (name[1] === "promises") {
+        qualifiers.push(localName);
+        continue;
+      }
+      const callee = escapeRegExp(localName);
+      if (new RegExp(`(?<![\\w$.])${callee}\\s*\\(`).test(text)) return true;
+    }
+  }
+  const receiver = qualifiers.map(escapeRegExp).join("|");
+  if (
+    new RegExp(
+      String.raw`(?<![\w$.])(?:${receiver})(?:\s*(?:\?\.|\.)\s*promises)?\s*(?:(?:\?\.|\.)\s*(?:open|read|write)|(?:\?\.)?\s*\[\s*["'\x60](?:open|read|write)["'\x60]\s*\])\s*(?:\?\.\s*)?\(`,
+    ).test(text)
+  )
+    return true;
+  return false;
+}
+
 function dataModelTextHasSerializedStateBoundary(text: string): boolean {
   // JSON conversion and a variable named "serialized" also occur in transient
   // diagnostics and IPC; neither supplies a storage boundary on its own.
   return (
-    /\b(?:writeFile(?:Sync)?|localStorage|sessionStorage|indexedDB|IDBObjectStore|workspaceState|globalState|persisted?|statePath)\b/i.test(
+    /\b(?:writeFile(?:Sync)?|localStorage|sessionStorage|indexedDB|IDBObjectStore|workspaceState|globalState|persisted?)\b/i.test(
       text,
     ) || /\bserialized\s+(?:data\s+)?(?:format|schema|layout|identity|namespace)\b/i.test(text)
   );
@@ -497,6 +547,25 @@ function dataModelTextHasSerializedStateBoundary(text: string): boolean {
 
 function dataModelTextHasCacheSchema(text: string): boolean {
   return /\bcache[_-]?schema\b|\bcache\s+(?:data\s+)?(?:format|schema|layout)\b/i.test(text);
+}
+
+function dataModelPatchChangesExistingStatePath(patch: string): boolean {
+  const declaration = /^(?:export\s+)?(?:const|let|var)\s+statePath(?:\s|[:=;,]|$)/;
+  const lines = patch
+    .split("\n")
+    .filter((line) => /^[+-]/.test(line) && !/^(?:\+\+\+|---)/.test(line))
+    .map((line) => ({ side: line.charAt(0), text: line.slice(1).trim() }))
+    .filter((line) => declaration.test(line.text));
+  const added = lines.filter((line) => line.side === "+").map((line) => line.text);
+  // Pair identical declarations across hunks so plain moves do not imply retargeting.
+  return lines
+    .filter((line) => line.side === "-")
+    .some((line) => {
+      const unchanged = added.indexOf(line.text);
+      if (unchanged < 0) return true;
+      added.splice(unchanged, 1);
+      return false;
+    });
 }
 
 function dataModelStorageContext(patch: string, hasPersistenceOwner = false): string[] {
@@ -508,12 +577,15 @@ function dataModelStorageContext(patch: string, hasPersistenceOwner = false): st
     .map((line) => line.slice(1).trim())
     .filter((line) => dataModelLineLooksSemantic(line, { docsOnly: false }))
     .join("\n");
+  const fileRead = dataModelTextHasFileRead(text);
+  const statePathStorage =
+    /\bstatePath\b/i.test(text) && (hasPersistenceOwner || dataModelTextHasFileIo(text));
   const surfaces: string[] = [];
   if (
     dataModelTextHasSerializedStateBoundary(text) ||
     (hasPersistenceOwner && dataModelTextHasJsonConversion(text)) ||
-    // Reading source or media is not a stored format; require decoding or its owner.
-    (dataModelTextHasFileRead(text) && (hasPersistenceOwner || /\bJSON\.parse\b/i.test(text)))
+    (fileRead && (hasPersistenceOwner || /\bJSON\.parse\b/i.test(text))) ||
+    statePathStorage
   ) {
     surfaces.push("serialized state");
   }

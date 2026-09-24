@@ -274,6 +274,7 @@ for (const [name, fixturePath, normalizationTruncates] of [
   ["SQLite worker diagnostic suffix", "./fixtures/persistence-classifier-138520.json", true],
   ["script source parser routing", "./fixtures/persistence-classifier-151772.json", true],
   ["Console stream routing", "./fixtures/persistence-classifier-152888.json", true],
+  ["tool construction read routing", "./fixtures/persistence-classifier-156686.json", true],
   [
     "JSON Schema value validation",
     "./fixtures/persistence-classifier-131624-json-schema.json",
@@ -400,9 +401,32 @@ test("file readers retain migration gates with same-hunk decoding or persistence
         filename: "src/runtime/reader.ts",
         patch: `@@\n const persisted = parseYaml(\n-  fs.${api}(oldTarget, "utf8"),\n+  fs.${api}(target, "utf8"),\n );`,
       },
+      ...[
+        "statePath",
+        "options.statePath",
+        "this.statePath",
+        "options?.statePath",
+        "await options.statePath",
+        "(this.statePath)",
+        "(await options.statePath)",
+        'options["statePath"]',
+        "this['statePath']",
+        'options?.["statePath"]',
+        'paths[current]["statePath"]',
+        'path.resolve(root, options["statePath"])',
+        'await resolvePath(options["statePath"])',
+        'path.resolve(root.replace(/\\)/g, ""), statePath)',
+      ].map((input) => ({
+        filename: "src/runtime/reader.ts",
+        patch: `@@\n+const value = decodeBinary(fs.${api}(${input}));`,
+      })),
       {
         filename: "src/runtime/reader.ts",
-        patch: `@@\n+const value = decodeBinary(fs.${api}(statePath));`,
+        patch: `@@\n+const value = decodeBinary(fs["${api}"](options["statePath"]));`,
+      },
+      {
+        filename: "src/runtime/reader.ts",
+        patch: `@@\n const value = decodeBinary(fs.${api}(\n-  oldPath,\n+  statePath,\n ));`,
       },
     ]) {
       const report = renderPersistenceReport([file], "a".repeat(40));
@@ -412,6 +436,184 @@ test("file readers retain migration gates with same-hunk decoding or persistence
       );
       assert.match(reviewAutomationMarkersFromReport(report), /clawsweeper-verdict:needs-human/);
     }
+  }
+});
+
+test("state-path stream and descriptor access retains compatibility holds", () => {
+  for (const expression of [
+    'fs.createReadStream(options["statePath"])',
+    "createWriteStream(options.statePath)",
+    'await fs.promises.open(statePath, "r")',
+    'fs["openSync"](options["statePath"], "r")',
+    "fs.readSync(stateFds.get(statePath), buffer, 0, buffer.length, 0)",
+    "fs.readv(stateFds.get(statePath), buffers, 0, done)",
+    "fs.writeSync(stateFds.get(statePath), payload)",
+    "fs.writevSync(stateFds.get(statePath), buffers)",
+    "fs.appendFileSync(statePath, payload)",
+    "fs.truncateSync(statePath, 0)",
+  ]) {
+    const report = renderPersistenceReport(
+      [{ filename: "src/runtime/records.ts", patch: `@@\n+${expression};` }],
+      "a".repeat(40),
+    );
+    assert.match(
+      renderReviewCommentFromReport(report, "none"),
+      /Add data-model compatibility proof/,
+    );
+    assert.match(reviewAutomationMarkersFromReport(report), /clawsweeper-verdict:needs-human/);
+  }
+  const pullFiles = [
+    {
+      filename: "src/runtime/source.ts",
+      patch:
+        '@@\n+const handle = await open(sourcePath, "r");\n+const result = JSON.parse(stdout);',
+    },
+  ];
+  assert.match(
+    reviewAutomationMarkersFromReport(renderPersistenceReport(pullFiles, "a".repeat(40))),
+    /clawsweeper-verdict:pass/,
+  );
+});
+
+test("unchanged state-path context guards changed I/O operations", () => {
+  for (const expression of [
+    "fs.createReadStream(file)",
+    "fs.createWriteStream(file)",
+    'fs.openSync(file, "r")',
+    "fs.readSync(fd, buffer, 0, buffer.length, 0)",
+    "fs.writeSync(fd, payload)",
+    "fs.appendFileSync(file, payload)",
+    "fs.truncateSync(file, 0)",
+  ]) {
+    const patch = `@@\n const statePath = options.databasePath;\n const file = statePath;\n const fd = stateFds.get(statePath);\n+${expression};`;
+    const report = renderPersistenceReport(
+      [{ filename: "src/runtime/records.ts", patch }],
+      "a".repeat(40),
+    );
+    assert.match(
+      renderReviewCommentFromReport(report, "none"),
+      /Add data-model compatibility proof/,
+    );
+    assert.match(reviewAutomationMarkersFromReport(report), /clawsweeper-verdict:needs-human/);
+  }
+});
+
+test("qualified filesystem and handle operations retain compatibility holds", () => {
+  for (const patch of [
+    ' const handle = await fs.promises.open(statePath, "r");\n+await handle.read(buffer);',
+    ' import { open as openFile } from "node:fs/promises";\n+await openFile(statePath, "r");',
+    '+await fs["open"](statePath, "r");',
+    '+await fs?.open(statePath, "r");',
+    '+await fs?.promises.open(statePath, "r");',
+    ' import * as nodeFs from "node:fs";\n+nodeFs.write(statePath, payload, done);',
+    ' import disk from "node:fs/promises";\n+await disk.open(statePath, "r");',
+    ' import { promises as disk } from "node:fs";\n+await disk.open(statePath, "r");',
+    ' import disk, * as nodeFs from "node:fs";\n+await disk.open(statePath, "r");',
+    ' import disk, * as nodeFs from "node:fs";\n+nodeFs.write(statePath, payload, done);',
+  ]) {
+    const report = renderPersistenceReport(
+      [{ filename: "src/runtime/records.ts", patch: "@@\n" + patch }],
+      "a".repeat(40),
+    );
+    assert.match(
+      renderReviewCommentFromReport(report, "none"),
+      /Add data-model compatibility proof/,
+    );
+    assert.match(reviewAutomationMarkersFromReport(report), /clawsweeper-verdict:needs-human/);
+  }
+});
+
+test("persistence-owner state-file relocations retain compatibility holds", () => {
+  for (const format of ["json", "bin"]) {
+    const report = renderPersistenceReport(
+      [
+        {
+          filename: "src/persistence/reader.ts",
+          patch: `@@\n-const statePath = path.join(root, "v1.${format}");\n+const statePath = path.join(root, "v2.${format}");`,
+        },
+      ],
+      "a".repeat(40),
+    );
+    assert.match(
+      renderReviewCommentFromReport(report, "none"),
+      /Add data-model compatibility proof/,
+      format,
+    );
+    assert.match(
+      reviewAutomationMarkersFromReport(report),
+      /clawsweeper-verdict:needs-human/,
+      format,
+    );
+  }
+});
+
+test("changed existing statePath declarations retain compatibility holds", () => {
+  const declaration = "const statePath = path.resolve(cwd, resolveOpenClawStateSqlitePath(env));";
+  for (const patch of [
+    ...[
+      'const statePath = path.resolve(cwd, "alternate.sqlite");',
+      "const statePath = path.resolve(cwd, resolveOpenClawStateSqlitePath(alternateEnv));",
+      "const statePath = (path.resolve(cwd, resolveOpenClawStateSqlitePath(env)));",
+      "const statePath: string = path.resolve(cwd, resolveOpenClawStateSqlitePath(env));",
+    ].map((replacement) => `@@\n-${declaration}\n+${replacement}`),
+    `@@\n-${declaration}`,
+    `@@\n-${declaration}\n@@\n+const statePath = "alternate.sqlite";`,
+  ]) {
+    const report = renderPersistenceReport(
+      [
+        {
+          filename: "src/agents/tool-construction-preparation.ts",
+          patch,
+        },
+      ],
+      "a".repeat(40),
+    );
+    assert.match(
+      renderReviewCommentFromReport(report, "none"),
+      /Add data-model compatibility proof/,
+    );
+    assert.match(reviewAutomationMarkersFromReport(report), /clawsweeper-verdict:needs-human/);
+  }
+});
+
+test("new, unchanged, moved, and reference-only routing captures stay clear", () => {
+  const declaration = "const statePath = path.resolve(cwd, resolveOpenClawStateSqlitePath(env));";
+  for (const patch of [
+    `@@\n ${declaration}\n+const diagnosticsEnabled = true;`,
+    `@@\n+${declaration}`,
+    "@@\n-await observe(statePath);\n+await observe(statePath, options);",
+    `@@\n-${declaration}\n+  ${declaration}`,
+    `@@\n-${declaration}\n@@\n+${declaration}`,
+    `@@\n-const previousFlag = false;\n+${declaration}`,
+  ]) {
+    const report = renderPersistenceReport(
+      [{ filename: "src/agents/tool-construction-preparation.ts", patch }],
+      "a".repeat(40),
+    );
+    assert.doesNotMatch(
+      renderReviewCommentFromReport(report, "none"),
+      /Add data-model compatibility proof/,
+    );
+    assert.match(reviewAutomationMarkersFromReport(report), /clawsweeper-verdict:pass/);
+  }
+});
+
+test("generic non-file calls cannot establish storage beside unchanged state paths", () => {
+  for (const patch of [
+    ...["window.open(url)", "reader.read()", "writer.write(value)", "reader.READSYNC(value)"].map(
+      (expression) => `@@\n const statePath = options.databasePath;\n+${expression};`,
+    ),
+    '@@\n import * as disk from "node:fs";\n const Disk = memoryReader;\n+Disk.read(statePath);',
+  ]) {
+    const report = renderPersistenceReport(
+      [{ filename: "src/runtime/view.ts", patch }],
+      "a".repeat(40),
+    );
+    assert.doesNotMatch(
+      renderReviewCommentFromReport(report, "none"),
+      /Add data-model compatibility proof/,
+    );
+    assert.match(reviewAutomationMarkersFromReport(report), /clawsweeper-verdict:pass/);
   }
 });
 
@@ -550,6 +752,26 @@ test("runtime state names and typed parameters alone do not establish stored dat
       assert.match(
         renderReviewCommentFromReport(renderPersistenceReport(pullFiles, "a".repeat(40)), "none"),
         /clawsweeper-review-state:ready/,
+      );
+    }
+  }
+});
+
+test("state paths need file-read evidence in the same hunk", () => {
+  for (const sameHunk of [false, true]) {
+    const patch = [
+      "@@\n+const statePath = options.databasePath;",
+      ...(sameHunk ? [] : ["@@"]),
+      "+const source = readFileSync(sourcePath, 'utf8');",
+    ].join("\n");
+    for (const evidence of [patch, `${patch}\n\n[truncated 90 chars]`]) {
+      const pullFiles = [{ filename: "src/runtime/source-reader.ts", patch: evidence }];
+      const report = renderPersistenceReport(pullFiles, "a".repeat(40));
+      const comment = renderReviewCommentFromReport(report, "none");
+      assert.equal(comment.includes("Add data-model compatibility proof"), sameHunk);
+      assert.equal(
+        reviewAutomationMarkersFromReport(report).includes("clawsweeper-verdict:pass"),
+        !sameHunk,
       );
     }
   }
