@@ -7,6 +7,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ## 0.3.1 - Unreleased
 
+- Isolate documentation-test build output so concurrent publication proofs can copy the compiled runtime without losing files.
+
 - Explain missing local review checkouts without a stack trace after Git source preparation, preserving the existing command error guidance.
 
 - Keep targeted apply and comments-only sync from starting broad review backstops; preserve backstops for automatic close-mode apply.
