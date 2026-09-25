@@ -7,6 +7,8 @@ checkpoint, and status-only commits are intentionally omitted.
 
 ## 0.3.1 - Unreleased
 
+- Explain missing local review checkouts without a stack trace after Git source preparation, preserving the existing command error guidance.
+
 - Keep targeted apply and comments-only sync from starting broad review backstops; preserve backstops for automatic close-mode apply.
 
 - Retain oversized PR proposals as explicit policy no-ops when close or comment-only gates prevent publication, without retrying the same review or claiming a GitHub comment was delivered.
